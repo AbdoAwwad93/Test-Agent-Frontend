@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function Dashboard() {
+export default function History() {
   const router = useRouter();
   const [runs, setRuns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     async function fetchRuns() {
@@ -26,75 +26,49 @@ export default function Dashboard() {
     fetchRuns();
   }, []);
 
-  const total = runs.length;
-  let successCount = 0;
-  let totalDur = 0;
-  let finishedCount = 0;
-  let runsLast24h = 0;
-  const now = new Date().getTime();
-
-  for (const r of runs) {
-    if (r.overall_status === 'pass' || r.goal_achieved === true) successCount++;
-    if (r.overall_status !== 'pending' && r.total_duration_ms) {
-      totalDur += r.total_duration_ms;
-      finishedCount++;
-    }
-    const age = now - new Date(r.created_at).getTime();
-    if (age <= 24 * 3600 * 1000) runsLast24h++;
-  }
-
-  const successRate = finishedCount ? Math.round((successCount / finishedCount) * 100) + '%' : '—';
-  const avgDur = finishedCount ? (totalDur / finishedCount / 1000).toFixed(1) + 's' : '—';
+  const filteredRuns = useMemo(() => {
+    const query = search.toLowerCase();
+    return runs.filter(r => 
+      r.story?.toLowerCase().includes(query) ||
+      r.url?.toLowerCase().includes(query) ||
+      r.id?.toLowerCase().includes(query)
+    );
+  }, [runs, search]);
 
   return (
     <div className="page active">
       <header className="page-header">
         <div>
-          <h1 className="page-title">Good evening, Curator.</h1>
-          <p className="page-subtitle">Here is the current state of your test environments.</p>
+          <h1 className="page-title">Test Execution History</h1>
+          <p className="page-subtitle">Review and analyze the outcomes of previous automated story evaluations.</p>
         </div>
-        <Link href="/runs/new" className="btn btn-primary">
-          <span className="material-icons-round">add</span>
-          New Test
-        </Link>
+        <div className="search-wrap">
+          <span className="material-icons-round">search</span>
+          <input 
+            type="text" 
+            className="search-input" 
+            placeholder="Filter sequences…" 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
       </header>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <span className="stat-label">Total Executions</span>
-          <span className="stat-value">{loading ? '—' : total}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">Success Rate</span>
-          <span className="stat-value accent">{loading ? '—' : successRate}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">Avg Duration</span>
-          <span className="stat-value">{loading ? '—' : avgDur}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">Last 24 h</span>
-          <span className="stat-value">{loading ? '—' : runsLast24h}</span>
-        </div>
-      </div>
-
-      <div className="section-header">
-        <h2 className="section-title">Recent Sequences</h2>
-      </div>
-
-      <div className="runs-list">
+      <div className="history-list">
         {loading ? (
           <div className="skeleton-list">
             <div className="skeleton"></div>
             <div className="skeleton"></div>
             <div className="skeleton"></div>
+            <div className="skeleton"></div>
           </div>
-        ) : runs.length === 0 ? (
+        ) : filteredRuns.length === 0 ? (
           <div className="empty-state">
-            <p>No runs found.</p>
+            <span className="material-icons-round">history</span>
+            <p><strong>No history found.</strong></p>
           </div>
         ) : (
-          runs.slice(0, 5).map(run => (
+          filteredRuns.map(run => (
             <div key={run.id} className={`run-card ${run.overall_status}`} onClick={() => router.push(`/runs/${run.id}`)}>
               <div className={`run-status-dot ${run.overall_status}`}></div>
               <div className="run-info">
@@ -112,10 +86,14 @@ export default function Dashboard() {
                     <span className="material-icons-round">timer</span>
                     {run.total_duration_ms > 0 ? (run.total_duration_ms / 1000).toFixed(1) + 's' : '--'}
                   </div>
+                   <div className="run-meta-item">
+                    <span className="material-icons-round">checklist</span>
+                    {run.passed}p / {run.failed}f
+                  </div>
                 </div>
               </div>
               <div className="run-chips">
-                <span className={`chip ${run.overall_status}`}>{run.overall_status}</span>
+                <span className={`chip ${run.overall_status}`}>{run.overall_status.toUpperCase()}</span>
               </div>
             </div>
           ))

@@ -20,7 +20,7 @@ export default function NewRun() {
     setLoading(true);
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/runs`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7788'}/api/runs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

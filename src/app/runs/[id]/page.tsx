@@ -18,7 +18,7 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
   useEffect(() => {
     async function init() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/runs/${id}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7788'}/api/runs/${id}`);
         if (!res.ok) throw new Error('Run not found');
         const data = await res.json();
         
@@ -41,7 +41,7 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
 
     let stream: EventSource | null = null;
     function startStreaming() {
-      stream = new EventSource(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/runs/${id}/stream`);
+      stream = new EventSource(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7788'}/api/runs/${id}/stream`);
       setLiveStatus('running');
       setLoading(false);
 
@@ -196,7 +196,7 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
 
             // Detailed view (not live streaming anymore, or fully detailed steps payload)
             const ssrc = step.screenshot
-                ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/screenshot/${id}/${step.screenshot}`
+                ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7788'}/screenshot/${id}/${step.screenshot}`
                 : null;
             return (
               <div key={idxKey} className={`exec-step ${isOpen ? 'open' : ''}`}>

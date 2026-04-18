@@ -49,7 +49,13 @@ function Sidebar() {
           <span className="material-icons-round">dashboard</span> Dashboard
         </Link>
         <Link href="/runs/new" className="nav-item">
-          <span className="material-icons-round">play_circle</span> New Run
+          <span className="material-icons-round">add_circle</span> New Run
+        </Link>
+        <Link href="/runs/live" className="nav-item">
+          <span className="material-icons-round">terminal</span> Live Execution
+        </Link>
+        <Link href="/history" className="nav-item">
+          <span className="material-icons-round">history</span> History
         </Link>
       </div>
       <div className="sidebar-footer">
