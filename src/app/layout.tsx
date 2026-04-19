@@ -8,7 +8,7 @@ const newsreader = Newsreader({ subsets: ['latin'], variable: '--font-editorial'
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
 export const metadata: Metadata = {
-  title: 'StorySpec AI — Quiet Intelligence',
+    title: 'Nomad AI Agent — Quiet Intelligence',
   description: 'AI-driven browser testing tool.',
 };
 
@@ -40,7 +40,7 @@ function Sidebar() {
           <span className="material-icons-round">graphic_eq</span>
         </div>
         <div>
-          <span className="brand-name">StorySpec AI</span>
+          <span className="brand-name">Nomad AI Agent</span>
           <span className="brand-sub">Quiet Intelligence</span>
         </div>
       </div>

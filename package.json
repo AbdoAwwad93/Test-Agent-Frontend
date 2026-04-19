@@ -1,5 +1,5 @@
 {
-  "name": "test-agent-web-ui",
+  "name": "nomad-ai-agent",
   "version": "0.1.0",
   "private": true,
   "scripts": {
