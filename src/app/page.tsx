@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/lib/api';
+import Link from 'next/link';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -12,7 +13,7 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchRuns() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7788'}/api/runs`);
+        const res = await fetch(`${API_URL}/api/runs`);
         if (res.ok) {
           const data = await res.json();
           setRuns(data.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));

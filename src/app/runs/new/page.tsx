@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/lib/api';
 
 export default function NewRun() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function NewRun() {
     setLoading(true);
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7788'}/api/runs`, {
+      const res = await fetch(`${API_URL}/api/runs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

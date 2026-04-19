@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/lib/api';
 import Link from 'next/link';
 
 export default function LiveExecutionStub() {
@@ -11,7 +12,7 @@ export default function LiveExecutionStub() {
   useEffect(() => {
     async function checkLive() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7788'}/api/runs`);
+        const res = await fetch(`${API_URL}/api/runs`);
         if (res.ok) {
           const data = await res.json();
           const activeRun = data.find((r: any) => r.overall_status === 'pending' || r.overall_status === 'running');
