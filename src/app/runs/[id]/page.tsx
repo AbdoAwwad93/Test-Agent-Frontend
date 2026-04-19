@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function RunDetail({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
-  
+
   const [run, setRun] = useState<any>(null);
   const [steps, setSteps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +21,7 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7788'}/api/runs/${id}`);
         if (!res.ok) throw new Error('Run not found');
         const data = await res.json();
-        
+
         setRun(data);
         if (data.steps) {
           setSteps(data.steps);
@@ -138,10 +138,10 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
         <div className="run-meta-row" style={{ marginBottom: '2rem' }}>
           <span className="meta-tag"><span className="material-icons-round">link</span>{run.url}</span>
           {!liveMode && (
-             <>
-               <span className="meta-tag"><span className="material-icons-round">timer</span>{run.total_duration_ms ? (run.total_duration_ms / 1000).toFixed(1) + 's' : '—'}</span>
-               <span className="meta-tag"><span className="material-icons-round">checklist</span>{run.passed || 0} passed / {run.failed || 0} failed</span>
-             </>
+            <>
+              <span className="meta-tag"><span className="material-icons-round">timer</span>{run.total_duration_ms ? (run.total_duration_ms / 1000).toFixed(1) + 's' : '—'}</span>
+              <span className="meta-tag"><span className="material-icons-round">checklist</span>{run.passed || 0} passed / {run.failed || 0} failed</span>
+            </>
           )}
           <span className="meta-tag"><span className="material-icons-round">tag</span>#{id.substring(0, 8)}</span>
         </div>
@@ -157,9 +157,9 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
       )}
 
       {!liveMode && run?.summary && (
-        <div className="curator-block">
-          <div className="curator-label"><span className="material-icons-round">psychology</span> Curator Analysis</div>
-          <p className="curator-text">{run.summary}</p>
+        <div className="Tester-block">
+          <div className="Tester-label"><span className="material-icons-round">psychology</span> Tester Analysis</div>
+          <p className="Tester-text">{run.summary}</p>
         </div>
       )}
 
@@ -196,12 +196,12 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
 
             // Detailed view (not live streaming anymore, or fully detailed steps payload)
             const ssrc = step.screenshot
-                ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7788'}/screenshot/${id}/${step.screenshot}`
-                : null;
+              ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7788'}/screenshot/${id}/${step.screenshot}`
+              : null;
             return (
               <div key={idxKey} className={`exec-step ${isOpen ? 'open' : ''}`}>
                 <div className="exec-step-header" onClick={() => toggleStep(i)}>
-                  <span className="step-num">{String(idxKey + 1).padStart(2,'0')}</span>
+                  <span className="step-num">{String(idxKey + 1).padStart(2, '0')}</span>
                   <span className="step-action-badge">{step.action}</span>
                   <span className="step-desc">{step.description}</span>
                   <span className={`material-icons-round step-status-icon ${step.status}`}>{icon}</span>
@@ -218,9 +218,9 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
           })
         )}
       </div>
-      
+
       {error && liveMode && (
-         <div className="form-error" style={{marginTop: '1rem'}}>
+        <div className="form-error" style={{ marginTop: '1rem' }}>
           <span className="material-icons-round">error_outline</span>
           <span>{error}</span>
         </div>

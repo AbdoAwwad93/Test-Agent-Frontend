@@ -50,7 +50,7 @@ export default function Dashboard() {
     <div className="page active">
       <header className="page-header">
         <div>
-          <h1 className="page-title">Good evening, Curator.</h1>
+          <h1 className="page-title">Good evening, Tester.</h1>
           <p className="page-subtitle">Here is the current state of your test environments.</p>
         </div>
         <Link href="/runs/new" className="btn btn-primary">
