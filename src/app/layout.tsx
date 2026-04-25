@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Newsreader, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import Link from 'next/link';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-ui' });
 const newsreader = Newsreader({ subsets: ['latin'], variable: '--font-editorial' });
@@ -23,10 +24,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
       </head>
       <body className={`${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable}`}>
-        <div id="app">
-          <Sidebar />
-          <main className="main">{children}</main>
-        </div>
+        <ThemeProvider>
+          <div id="app">
+            <Sidebar />
+            <main className="main">{children}</main>
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );
@@ -57,11 +60,6 @@ function Sidebar() {
         <Link href="/history" className="nav-item">
           <span className="material-icons-round">history</span> History
         </Link>
-      </div>
-      <div className="sidebar-footer">
-        <div className="status-indicator">
-          <div className="dot running"></div> Core Systems
-        </div>
       </div>
     </nav>
   );

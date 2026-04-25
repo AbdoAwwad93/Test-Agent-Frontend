@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/api';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -54,10 +55,13 @@ export default function Dashboard() {
           <h1 className="page-title">Good evening, Tester.</h1>
           <p className="page-subtitle">Here is the current state of your test environments.</p>
         </div>
-        <Link href="/runs/new" className="btn btn-primary">
-          <span className="material-icons-round">add</span>
-          New Test
-        </Link>
+        <div className="header-actions">
+          <ThemeToggle />
+          <Link href="/runs/new" className="btn btn-primary">
+            <span className="material-icons-round">add</span>
+            New Test
+          </Link>
+        </div>
       </header>
 
       <div className="stats-grid">
