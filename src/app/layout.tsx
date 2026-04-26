@@ -1,16 +1,22 @@
-import type { Metadata } from 'next';
-import { Inter, Newsreader, JetBrains_Mono } from 'next/font/google';
-import './globals.css';
-import Link from 'next/link';
-import { ThemeProvider } from '@/components/ThemeProvider';
+import type { Metadata } from "next";
+import { Inter, Newsreader, JetBrains_Mono } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { AppShell } from "@/components/AppShell";
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-ui' });
-const newsreader = Newsreader({ subsets: ['latin'], variable: '--font-editorial' });
-const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
+const inter = Inter({ subsets: ["latin"], variable: "--font-ui" });
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  variable: "--font-editorial",
+});
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
-    title: 'Nomad AI Agent — Quiet Intelligence',
-  description: 'AI-driven browser testing tool.',
+  title: "Nomad AI Agent - Quiet Intelligence",
+  description: "AI-driven browser testing tool.",
 };
 
 export default function RootLayout({
@@ -21,46 +27,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/icon?family=Material+Icons+Round"
+          rel="stylesheet"
+        />
       </head>
-      <body className={`${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable}`}>
+      <body
+        className={`${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable}`}
+      >
         <ThemeProvider>
-          <div id="app">
-            <Sidebar />
-            <main className="main">{children}</main>
-          </div>
+          <AppShell>{children}</AppShell>
         </ThemeProvider>
       </body>
     </html>
-  );
-}
-
-function Sidebar() {
-  return (
-    <nav className="sidebar">
-      <div className="sidebar-brand">
-        <div className="brand-icon">
-          <span className="material-icons-round">graphic_eq</span>
-        </div>
-        <div>
-          <span className="brand-name">Nomad AI Agent</span>
-          <span className="brand-sub">Quiet Intelligence</span>
-        </div>
-      </div>
-      <div className="sidebar-nav">
-        <Link href="/" className="nav-item">
-          <span className="material-icons-round">dashboard</span> Dashboard
-        </Link>
-        <Link href="/runs/new" className="nav-item">
-          <span className="material-icons-round">add_circle</span> New Run
-        </Link>
-        <Link href="/runs/live" className="nav-item">
-          <span className="material-icons-round">terminal</span> Live Execution
-        </Link>
-        <Link href="/history" className="nav-item">
-          <span className="material-icons-round">history</span> History
-        </Link>
-      </div>
-    </nav>
   );
 }
