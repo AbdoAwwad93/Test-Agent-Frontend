@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { API_URL } from '@/lib/api';
+import { createRun } from '@/lib/api';
 
 export default function NewRun() {
   const router = useRouter();
@@ -21,19 +21,7 @@ export default function NewRun() {
     setLoading(true);
     
     try {
-      const res = await fetch(`${API_URL}/api/runs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url, story, headless })
-      });
-      
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || 'Failed to start run');
-      }
-      
+      const data = await createRun({ url, story, headless });
       router.push(`/runs/${data.run_id}`);
     } catch (err: any) {
       setError(err.message || 'An unknown error occurred');

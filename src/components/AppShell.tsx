@@ -1,8 +1,9 @@
 "use client";
 
+import { fetchHealth } from "@/lib/api";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -21,6 +22,33 @@ export function AppShell({ children }: { children: ReactNode }) {
 }
 
 function Sidebar({ pathname }: { pathname: string }) {
+  const [apiStatus, setApiStatus] = useState<"checking" | "online" | "offline">(
+    "checking",
+  );
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadHealth() {
+      try {
+        await fetchHealth();
+        if (mounted) {
+          setApiStatus("online");
+        }
+      } catch {
+        if (mounted) {
+          setApiStatus("offline");
+        }
+      }
+    }
+
+    loadHealth();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const items = [
     { href: "/dashboard", icon: "dashboard", label: "Dashboard" },
     { href: "/runs/new", icon: "add_circle", label: "New Run" },
@@ -56,6 +84,26 @@ function Sidebar({ pathname }: { pathname: string }) {
             </Link>
           );
         })}
+      </div>
+      <div className="sidebar-footer">
+        <div className="status-indicator">
+          <span
+            className={`dot ${
+              apiStatus === "online"
+                ? "pass"
+                : apiStatus === "offline"
+                  ? "fail"
+                  : "idle"
+            }`}
+          />
+          <span>
+            {apiStatus === "online"
+              ? "API Online"
+              : apiStatus === "offline"
+                ? "API Offline"
+                : "Checking API"}
+          </span>
+        </div>
       </div>
     </nav>
   );

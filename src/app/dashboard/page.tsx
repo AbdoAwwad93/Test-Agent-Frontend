@@ -3,38 +3,23 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { API_URL } from "@/lib/api";
+import {
+  fetchRuns as fetchRunsApi,
+  sortRunsByNewest,
+  type RunRecord,
+} from "@/lib/api";
 import { ThemeToggle } from "@/components/ThemeToggle";
-
-type Run = {
-  id: string;
-  story: string;
-  url: string;
-  created_at: string;
-  overall_status: "pass" | "fail" | "pending";
-  goal_achieved?: boolean;
-  total_duration_ms?: number;
-};
 
 export default function Dashboard() {
   const router = useRouter();
-  const [runs, setRuns] = useState<Run[]>([]);
+  const [runs, setRuns] = useState<RunRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchRuns() {
+    async function loadRuns() {
       try {
-        const res = await fetch(`${API_URL}/api/runs`);
-        if (res.ok) {
-          const data = (await res.json()) as Run[];
-          setRuns(
-            data.sort(
-              (a, b) =>
-                new Date(b.created_at).getTime() -
-                new Date(a.created_at).getTime(),
-            ),
-          );
-        }
+        const data = await fetchRunsApi();
+        setRuns(sortRunsByNewest(data));
       } catch (err) {
         console.error(err);
       } finally {
@@ -42,7 +27,7 @@ export default function Dashboard() {
       }
     }
 
-    fetchRuns();
+    loadRuns();
   }, []);
 
   const total = runs.length;
@@ -56,7 +41,11 @@ export default function Dashboard() {
     if (run.overall_status === "pass" || run.goal_achieved === true) {
       successCount++;
     }
-    if (run.overall_status !== "pending" && run.total_duration_ms) {
+    if (
+      run.overall_status !== "pending" &&
+      run.overall_status !== "running" &&
+      run.total_duration_ms
+    ) {
       totalDur += run.total_duration_ms;
       finishedCount++;
     }
@@ -157,6 +146,11 @@ export default function Dashboard() {
                 <span className={`chip ${run.overall_status}`}>
                   {run.overall_status}
                 </span>
+                {run.canceled && run.cancel_reason && (
+                  <span className="chip canceled">
+                    {run.cancel_reason}
+                  </span>
+                )}
               </div>
             </div>
           ))

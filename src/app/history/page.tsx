@@ -2,34 +2,35 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { API_URL } from '@/lib/api';
+import {
+  fetchRuns as fetchRunsApi,
+  sortRunsByNewest,
+  type RunRecord,
+} from '@/lib/api';
 
 export default function History() {
   const router = useRouter();
-  const [runs, setRuns] = useState<any[]>([]);
+  const [runs, setRuns] = useState<RunRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    async function fetchRuns() {
+    async function loadRuns() {
       try {
-        const res = await fetch(`${API_URL}/api/runs`);
-        if (res.ok) {
-          const data = await res.json();
-          setRuns(data.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
-        }
+        const data = await fetchRunsApi();
+        setRuns(sortRunsByNewest(data));
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
       }
     }
-    fetchRuns();
+    loadRuns();
   }, []);
 
   const filteredRuns = useMemo(() => {
     const query = search.toLowerCase();
-    return runs.filter(r => 
+    return runs.filter((r) => 
       r.story?.toLowerCase().includes(query) ||
       r.url?.toLowerCase().includes(query) ||
       r.id?.toLowerCase().includes(query)
@@ -85,12 +86,20 @@ export default function History() {
                   </div>
                   <div className="run-meta-item mano">
                     <span className="material-icons-round">timer</span>
-                    {run.total_duration_ms > 0 ? (run.total_duration_ms / 1000).toFixed(1) + 's' : '--'}
+                    {run.total_duration_ms && run.total_duration_ms > 0
+                      ? (run.total_duration_ms / 1000).toFixed(1) + 's'
+                      : '--'}
                   </div>
-                   <div className="run-meta-item">
+                  <div className="run-meta-item">
                     <span className="material-icons-round">checklist</span>
-                    {run.passed}p / {run.failed}f
+                    {run.passed || 0}p / {run.failed || 0}f
                   </div>
+                  {run.canceled && run.cancel_reason && (
+                    <div className="run-meta-item">
+                      <span className="material-icons-round">block</span>
+                      {run.cancel_reason}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="run-chips">

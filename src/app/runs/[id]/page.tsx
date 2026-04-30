@@ -2,7 +2,15 @@
 
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { API_URL } from '@/lib/api';
+import {
+  API_URL,
+  cancelRun,
+  fetchRun,
+  getScreenshotUrl,
+  isRunActive,
+  type RunRecord,
+  type RunStep,
+} from '@/lib/api';
 
 function getStepOrder(step: any, fallbackIndex = 0) {
   return step.step_index ?? step.index ?? fallbackIndex;
@@ -44,27 +52,26 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
   const router = useRouter();
   const { id } = use(params);
 
-  const [run, setRun] = useState<any>(null);
-  const [steps, setSteps] = useState<any[]>([]);
+  const [run, setRun] = useState<RunRecord | null>(null);
+  const [steps, setSteps] = useState<RunStep[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [liveMode, setLiveMode] = useState(false);
   const [liveStatus, setLiveStatus] = useState('connecting');
   const [openSteps, setOpenSteps] = useState<Set<number>>(new Set());
+  const [canceling, setCanceling] = useState(false);
 
   useEffect(() => {
     async function init() {
       try {
-        const res = await fetch(`${API_URL}/api/runs/${id}`);
-        if (!res.ok) throw new Error('Run not found');
-        const data = await res.json();
+        const data = await fetchRun(id);
 
         setRun(data);
         if (data.steps) {
           setSteps(data.steps);
         }
 
-        if (data.overall_status === 'pending' || data.overall_status === 'running') {
+        if (isRunActive(data)) {
           setLiveMode(true);
           startStreaming();
         } else {
@@ -87,8 +94,25 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
           const eUrlData = JSON.parse(ev.data);
           if (eUrlData.type === 'step') {
             setSteps((prev) => mergeStep(prev, eUrlData));
+            setRun((prev) => (prev ? { ...prev, overall_status: 'running' } : prev));
+            setLiveStatus('running');
+          } else if (eUrlData.type === 'cancel_requested') {
+            setRun((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    canceled: true,
+                    cancel_reason: eUrlData.reason ?? prev.cancel_reason,
+                  }
+                : prev,
+            );
+            setLiveStatus('cancel_requested');
           } else if (eUrlData.type === 'finished') {
-            setRun((prev: any) => ({ ...prev, ...eUrlData, overall_status: eUrlData.overall_status }));
+            setRun((prev) =>
+              prev
+                ? { ...prev, ...eUrlData, overall_status: eUrlData.overall_status }
+                : eUrlData,
+            );
             setLiveMode(false);
             if (stream) { stream.close(); stream = null; }
           } else if (eUrlData.type === 'error') {
@@ -129,6 +153,33 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
     });
   };
 
+  const handleCancel = async () => {
+    if (!run || canceling) {
+      return;
+    }
+
+    setCanceling(true);
+    setError('');
+
+    try {
+      await cancelRun(run.id, 'Stopped by user from dashboard');
+      setRun((prev) =>
+        prev
+          ? {
+              ...prev,
+              canceled: true,
+              cancel_reason: 'Stopped by user from dashboard',
+            }
+          : prev,
+      );
+      setLiveStatus('cancel_requested');
+    } catch (err: any) {
+      setError(err.message || 'Failed to cancel run');
+    } finally {
+      setCanceling(false);
+    }
+  };
+
   if (loading) {
     return <div className="page active" style={{ padding: '4rem' }}>Loading run data...</div>;
   }
@@ -164,9 +215,21 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
         {liveMode && (
           <div className="live-controls">
             <div className="status-pill">
-              <span className={`dot ${liveStatus === 'running' ? 'running' : 'idle'}`}></span>
-              <span>{liveStatus === 'running' ? 'Running' : 'Disconnected'}</span>
+              <span className={`dot ${liveStatus === 'running' ? 'running' : liveStatus === 'cancel_requested' ? 'warn' : 'idle'}`}></span>
+              <span>
+                {liveStatus === 'running'
+                  ? 'Running'
+                  : liveStatus === 'cancel_requested'
+                    ? 'Cancel Requested'
+                    : 'Disconnected'}
+              </span>
             </div>
+            {isRunActive(run) && (
+              <button className="btn btn-secondary" onClick={handleCancel} disabled={canceling}>
+                <span className="material-icons-round">stop_circle</span>
+                {canceling ? 'Requesting Cancel...' : 'Cancel Run'}
+              </button>
+            )}
           </div>
         )}
       </header>
@@ -179,6 +242,12 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
               <span className="meta-tag"><span className="material-icons-round">timer</span>{run.total_duration_ms ? (run.total_duration_ms / 1000).toFixed(1) + 's' : '—'}</span>
               <span className="meta-tag"><span className="material-icons-round">checklist</span>{run.passed || 0} passed / {run.failed || 0} failed</span>
             </>
+          )}
+          {run.canceled && (
+            <span className="meta-tag">
+              <span className="material-icons-round">block</span>
+              {run.cancel_reason || 'Canceled'}
+            </span>
           )}
           <span className="meta-tag"><span className="material-icons-round">tag</span>#{id.substring(0, 8)}</span>
         </div>
@@ -233,9 +302,7 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
             }
 
             // Detailed view (not live streaming anymore, or fully detailed steps payload)
-            const ssrc = step.screenshot
-              ? `${API_URL}/screenshot/${id}/${step.screenshot}`
-              : null;
+            const ssrc = getScreenshotUrl(id, step.screenshot);
             return (
               <div key={stepKey} className={`exec-step ${isOpen ? 'open' : ''}`}>
                 <div className="exec-step-header" onClick={() => toggleStep(i)}>

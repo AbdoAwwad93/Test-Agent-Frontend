@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { API_URL } from '@/lib/api';
+import { fetchRuns, isRunActive, type RunRecord } from '@/lib/api';
 import Link from 'next/link';
 
 export default function LiveExecutionStub() {
@@ -12,14 +12,11 @@ export default function LiveExecutionStub() {
   useEffect(() => {
     async function checkLive() {
       try {
-        const res = await fetch(`${API_URL}/api/runs`);
-        if (res.ok) {
-          const data = await res.json();
-          const activeRun = data.find((r: any) => r.overall_status === 'pending' || r.overall_status === 'running');
-          if (activeRun) {
-            router.replace(`/runs/${activeRun.id}`);
-            return;
-          }
+        const data = await fetchRuns();
+        const activeRun = data.find((run: RunRecord) => isRunActive(run));
+        if (activeRun) {
+          router.replace(`/runs/${activeRun.id}`);
+          return;
         }
       } catch (err) {
         console.error(err);
