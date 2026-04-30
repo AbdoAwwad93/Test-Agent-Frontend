@@ -4,6 +4,42 @@ import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/api';
 
+function getStepOrder(step: any, fallbackIndex = 0) {
+  return step.step_index ?? step.index ?? fallbackIndex;
+}
+
+function getStepKey(step: any, fallbackIndex = 0) {
+  const order = getStepOrder(step, fallbackIndex);
+  const action = step.action ?? 'step';
+  const description = step.description ?? '';
+  const status = step.status ?? 'unknown';
+  const duration = step.duration_ms ?? 'na';
+  return `${order}-${action}-${description}-${status}-${duration}-${fallbackIndex}`;
+}
+
+function mergeStep(prevSteps: any[], incomingStep: any) {
+  const incomingOrder = getStepOrder(incomingStep, -1);
+
+  if (incomingOrder !== -1) {
+    const existingIndex = prevSteps.findIndex(
+      (step) => getStepOrder(step, -1) === incomingOrder,
+    );
+
+    if (existingIndex !== -1) {
+      const next = [...prevSteps];
+      next[existingIndex] = { ...next[existingIndex], ...incomingStep };
+      return next;
+    }
+  }
+
+  const incomingKey = getStepKey(incomingStep, prevSteps.length);
+  if (prevSteps.some((step, index) => getStepKey(step, index) === incomingKey)) {
+    return prevSteps;
+  }
+
+  return [...prevSteps, incomingStep];
+}
+
 export default function RunDetail({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
@@ -50,7 +86,7 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
         try {
           const eUrlData = JSON.parse(ev.data);
           if (eUrlData.type === 'step') {
-            setSteps(prev => [...prev, eUrlData]);
+            setSteps((prev) => mergeStep(prev, eUrlData));
           } else if (eUrlData.type === 'finished') {
             setRun((prev: any) => ({ ...prev, ...eUrlData, overall_status: eUrlData.overall_status }));
             setLiveMode(false);
@@ -178,12 +214,13 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
         ) : (
           steps.map((step, i) => {
             const icon = step.status === 'pass' ? 'check_circle' : step.status === 'fail' ? 'cancel' : liveMode ? 'autorenew' : 'radio_button_unchecked';
-            const idxKey = step.step_index ?? step.index ?? i;
+            const stepOrder = getStepOrder(step, i);
+            const stepKey = getStepKey(step, i);
             const isOpen = openSteps.has(i);
 
             if (liveMode) {
               return (
-                <div key={idxKey} className="log-entry">
+                <div key={stepKey} className="log-entry">
                   <span className={`material-icons-round log-icon ${step.status}`}>{icon}</span>
                   <div className="log-body">
                     <div className="log-action">{step.action}</div>
@@ -200,9 +237,9 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
               ? `${API_URL}/screenshot/${id}/${step.screenshot}`
               : null;
             return (
-              <div key={idxKey} className={`exec-step ${isOpen ? 'open' : ''}`}>
+              <div key={stepKey} className={`exec-step ${isOpen ? 'open' : ''}`}>
                 <div className="exec-step-header" onClick={() => toggleStep(i)}>
-                  <span className="step-num">{String(idxKey + 1).padStart(2, '0')}</span>
+                  <span className="step-num">{String(stepOrder + 1).padStart(2, '0')}</span>
                   <span className="step-action-badge">{step.action}</span>
                   <span className="step-desc">{step.description}</span>
                   <span className={`material-icons-round step-status-icon ${step.status}`}>{icon}</span>
@@ -212,7 +249,7 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
                   {step.error && <div className="step-error-box">{step.error}</div>}
                   {step.target && <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>target: {step.target}</div>}
                   {step.value && <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>value: {step.value}</div>}
-                  {ssrc && <div className="step-screenshot"><img src={ssrc} alt={`Screenshot step ${idxKey + 1}`} loading="lazy" /></div>}
+                  {ssrc && <div className="step-screenshot"><img src={ssrc} alt={`Screenshot step ${stepOrder + 1}`} loading="lazy" /></div>}
                 </div>
               </div>
             );
