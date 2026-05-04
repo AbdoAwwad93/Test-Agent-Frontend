@@ -5,24 +5,24 @@
    DARK MODE (Default)
    ============================================================================ */
 :root {
-  /* Dark Palette: The Nocturnal Atelier */
-  --surface:                   #0f0f0e; /* deep charcoal base */
-  --surface-container-low:     #1a1a18; /* recessed areas, sidebars */
-  --surface-container-lowest:  #252523; /* prominent parts, inputs */
-  --surface-container-highest: #333330; /* secondary items */
+  /* Black and White Dark Palette */
+  --surface:                   #000000; /* pure black base */
+  --surface-container-low:     #111111; /* dark gray for recessed areas */
+  --surface-container-lowest:  #222222; /* darker gray for inputs */
+  --surface-container-highest: #333333; /* lighter gray for secondary items */
   
-  --primary:           #c46a4a; /* warm terracotta (slightly brighter for dark) */
-  --primary-container: #e08b6b; /* lighter accent for gradient */
-  --primary-fixed:     #3d2822; /* accent dark wash */
+  --primary:           #ffffff; /* white primary */
+  --primary-container: #cccccc; /* light gray accent */
+  --primary-fixed:     #666666; /* medium gray wash */
   
-  --on-surface:        #f5f3ef; /* off-white for text */
-  --outline-variant:   #4a4540; /* ghost borders */
+  --on-surface:        #ffffff; /* white for text */
+  --outline-variant:   #555555; /* gray borders */
 
-  --pass:          #4CAF7C;
+  --pass:          #4CAF7C; /* keep green for pass */
   --pass-dim:      #1a2f23;
-  --fail:          #d66b6b;
+  --fail:          #d66b6b; /* keep red for fail */
   --fail-dim:      #2d1a1a;
-  --warn:          #d4a343;
+  --warn:          #d4a343; /* keep yellow for warn */
   --warn-dim:      #2d2515;
 
   /* Typography */
@@ -32,8 +32,8 @@
 
   /* Text Colors */
   --text-primary:  var(--on-surface);
-  --text-secondary: rgba(245, 243, 239, 0.7);
-  --text-muted:    rgba(245, 243, 239, 0.5);
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted:    rgba(255, 255, 255, 0.5);
 
   /* Spacing & Rad */
   --sidebar-w:     260px;
@@ -47,30 +47,30 @@
    LIGHT MODE OVERRIDE
    ============================================================================ */
 [data-theme="light"] {
-  /* Light Palette: The Intellectual Atelier */
-  --surface:                   #fcf9f4;
-  --surface-container-low:     #f6f3ee;
-  --surface-container-lowest:  #ffffff;
-  --surface-container-highest: #e5e2dd;
+  /* Black and White Light Palette */
+  --surface:                   #ffffff; /* pure white base */
+  --surface-container-low:     #f0f0f0; /* light gray for recessed areas */
+  --surface-container-lowest:  #ffffff; /* white for inputs */
+  --surface-container-highest: #e0e0e0; /* darker gray for secondary items */
   
-  --primary:           #99462a;
-  --primary-container: #d97757;
-  --primary-fixed:     #ffdbd0;
+  --primary:           #000000; /* black primary */
+  --primary-container: #333333; /* dark gray accent */
+  --primary-fixed:     #f0f0f0; /* light gray wash */
   
-  --on-surface:        #1c1c19;
-  --outline-variant:   #dbc1b9;
+  --on-surface:        #000000; /* black for text */
+  --outline-variant:   #cccccc; /* light gray borders */
 
-  --pass:          #2A7352;
+  --pass:          #2A7352; /* keep green for pass */
   --pass-dim:      #eaf3ed;
-  --fail:          #a63c3c;
+  --fail:          #a63c3c; /* keep red for fail */
   --fail-dim:      #fdf0ef;
-  --warn:          #9e6616;
+  --warn:          #9e6616; /* keep yellow for warn */
   --warn-dim:      #fdf9e9;
 
   /* Text Colors */
   --text-primary:  var(--on-surface);
-  --text-secondary: rgba(28, 28, 25, 0.7);
-  --text-muted:    rgba(28, 28, 25, 0.5);
+  --text-secondary: rgba(0, 0, 0, 0.7);
+  --text-muted:    rgba(0, 0, 0, 0.5);
 }
 
 html { font-size: 16px; }
