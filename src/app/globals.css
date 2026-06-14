@@ -1182,8 +1182,8 @@ h1, h2, h3, h4, h5, h6, .display-txt, .page-title {
 .landing-page {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top right, rgba(217, 119, 87, 0.18), transparent 28%),
-    linear-gradient(180deg, #fffdf8 0%, var(--surface) 20%, var(--surface) 100%);
+    radial-gradient(circle at top right, rgba(0, 0, 0, 0.1), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, var(--surface) 20%, var(--surface) 100%);
   color: var(--on-surface);
 }
 
@@ -1259,7 +1259,7 @@ h1, h2, h3, h4, h5, h6, .display-txt, .page-title {
 .landing-button-primary {
   color: #fff;
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
-  box-shadow: 0 12px 28px rgba(153, 70, 42, 0.22);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
 }
 
 .landing-button-primary:hover {
@@ -1338,7 +1338,7 @@ h1, h2, h3, h4, h5, h6, .display-txt, .page-title {
 .landing-hero-glow {
   position: absolute;
   inset: -2rem;
-  background: radial-gradient(circle, rgba(255, 219, 208, 0.95) 0%, rgba(255, 219, 208, 0) 70%);
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
   filter: blur(24px);
   opacity: 0.8;
 }
@@ -1601,7 +1601,7 @@ h1, h2, h3, h4, h5, h6, .display-txt, .page-title {
   width: 260px;
   height: 260px;
   border-radius: 999px;
-  background: rgba(153, 70, 42, 0.1);
+  background: rgba(0, 0, 0, 0.1);
   filter: blur(18px);
 }
 
