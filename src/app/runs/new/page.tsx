@@ -23,8 +23,8 @@ export default function NewRun() {
     try {
       const data = await createRun({ url, story, headless });
       router.push(`/runs/${data.run_id}`);
-    } catch (err: any) {
-      setError(err.message || 'An unknown error occurred');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
       setLoading(false);
     }
   };
@@ -97,11 +97,11 @@ export default function NewRun() {
 
           <div className="form-quote">
             <span className="material-icons-round">format_quote</span>
-            "Ensure narratives are precise. Ambiguity leads to divergent exploration states."
+            &ldquo;Ensure narratives are precise. Ambiguity leads to divergent exploration states.&rdquo;
           </div>
 
           <div className="form-actions">
-            <button className="btn btn-ghost" onClick={() => router.push('/')}>Cancel</button>
+            <button className="btn btn-ghost" onClick={() => router.push('/dashboard')}>Cancel</button>
             <button 
               className="btn btn-primary btn-large" 
               onClick={handleSubmit} 

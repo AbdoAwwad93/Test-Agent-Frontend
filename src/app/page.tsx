@@ -101,7 +101,7 @@ export default function LandingPage() {
         </div>
         <div className="landing-nav-actions">
           <ThemeToggle />
-          <Link href="/dashboard" className="landing-link-button">
+          <Link href="/dashboard" replace className="landing-link-button">
             Dashboard
           </Link>
           <Link href="/runs/new" className="landing-button landing-button-primary">
@@ -131,6 +131,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 href="/dashboard"
+                replace
                 className="landing-button landing-button-secondary"
               >
                 View Dashboard
@@ -272,7 +273,7 @@ export default function LandingPage() {
               >
                 Start Testing Free
               </Link>
-              <Link href="/dashboard" className="landing-link-button">
+              <Link href="/dashboard" replace className="landing-link-button">
                 Open Dashboard
               </Link>
             </div>

@@ -50,6 +50,7 @@ function Sidebar({ pathname }: { pathname: string }) {
   }, []);
 
   const items = [
+    { href: "/", icon: "home", label: "Home" },
     { href: "/dashboard", icon: "dashboard", label: "Dashboard" },
     { href: "/runs/new", icon: "add_circle", label: "New Run" },
     { href: "/runs/live", icon: "terminal", label: "Live Execution" },
@@ -70,8 +71,11 @@ function Sidebar({ pathname }: { pathname: string }) {
       <div className="sidebar-nav">
         {items.map((item) => {
           const isActive =
-            pathname === item.href ||
-            (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
+            (item.href === "/" && pathname === "/") ||
+            (item.href !== "/" &&
+              (pathname === item.href ||
+                (item.href !== "/dashboard" &&
+                  pathname.startsWith(`${item.href}/`))));
 
           return (
             <Link

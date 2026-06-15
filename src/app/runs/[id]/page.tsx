@@ -199,7 +199,7 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
     <div className="page active">
       <header className="page-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button className="btn btn-ghost btn-icon" onClick={() => router.back()}>
+          <button className="btn btn-ghost btn-icon" onClick={() => router.replace('/dashboard')}>
             <span className="material-icons-round">arrow_back</span>
           </button>
           <div>
