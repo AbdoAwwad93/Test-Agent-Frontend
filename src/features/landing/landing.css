@@ -1,9 +1,11 @@
-.landing-nav {
+
+@media (max-width: 640px) {
+  .landing-nav {
     width: calc(100% - 1rem);
     margin-top: 0.75rem;
     padding: 0.85rem 1rem;
     border-radius: 20px;
-}
+  }
 
   .landing-main,
   .landing-footer {
@@ -13,52 +15,24 @@
   .landing-hero h1,
   .landing-section-heading h2,
   .landing-insights-copy h2,
- 
+  .landing-cta-card h2 {
+    font-size: clamp(2.25rem, 11vw, 3rem);
+  }
 
   .landing-dashboard-card,
   .landing-step-card,
   .landing-feature-card,
-
+  .landing-cta-card {
+    padding: 1.35rem;
+    border-radius: 22px;
+  }
 
   .landing-dashboard-stats strong {
     font-size: 1.6rem;
   }
-
-
-.landing-section {
-  padding: 5rem 0;
 }
-
-.landing-cta-card h2 {
-    font-size: clamp(2.25rem, 11vw, 3rem);
-}
-
-.landing-cta-card {
-    padding: 1.35rem;
-    border-radius: 22px;
-}
-
-.landing-cta-card h2 {
-  font-size: clamp(3rem, 7vw, 5.4rem);
-  line-height: 1.04;
-  font-family: var(--font-editorial);
-  letter-spacing: -0.04em;
-}
-
-.landing-lead,
-.landing-section-heading p,
-.landing-insights-copy p,
-.landing-step-card p,
-.landing-feature-card p,
-.landing-cta-card p,
-.landing-footer p {
-  color: var(--text-secondary);
-  line-height: 1.75;
-  font-size: 1.03rem;
-}
-
-
 .landing-page {
+  display: flow-root;
   min-height: 100vh;
   background:
     radial-gradient(
@@ -144,7 +118,7 @@
 }
 
 .landing-button-primary {
-  color: #fff;
+  color: var(--surface);
   background: linear-gradient(
     135deg,
     var(--primary) 0%,
@@ -198,13 +172,29 @@
 .landing-hero h1,
 .landing-section-heading h2,
 .landing-insights-copy h2,
-
+.landing-cta-card h2 {
+  font-size: clamp(3rem, 7vw, 5.4rem);
+  line-height: 1.04;
+  font-family: var(--font-editorial);
+  letter-spacing: -0.04em;
+}
 
 .landing-hero h1 span {
   font-style: italic;
   font-weight: 400;
 }
 
+.landing-lead,
+.landing-section-heading p,
+.landing-insights-copy p,
+.landing-step-card p,
+.landing-feature-card p,
+.landing-cta-card p,
+.landing-footer p {
+  color: var(--text-secondary);
+  line-height: 1.75;
+  font-size: 1.03rem;
+}
 
 .landing-hero-media {
   position: relative;
@@ -231,6 +221,9 @@
   box-shadow: 0 24px 60px rgba(28, 28, 25, 0.13);
 }
 
+.landing-section {
+  padding: 5rem 0;
+}
 
 .landing-section-muted {
   background: var(--surface-container-low);
@@ -490,6 +483,7 @@
   justify-content: space-between;
   gap: 1.5rem;
 }
+
 @media (max-width: 980px) {
   .landing-nav {
     top: 0.75rem;
@@ -552,4 +546,3 @@
     flex-direction: column;
   }
 }
-
