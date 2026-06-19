@@ -1,8 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import "../landing.css"
+import { useHeroParallax } from "../Usescrolleffects";
 
 export function Hero() {
+  const parallaxRef = useHeroParallax();
+
   return (
     <section id="product" className="landing-hero">
       <div className="landing-hero-copy">
@@ -16,23 +21,15 @@ export function Hero() {
           high-signal results without the busywork of brittle scripts.
         </p>
         <div className="landing-hero-actions">
-          <Link
-            href="/runs/new"
-            className="landing-button landing-button-primary"
-          >
+          <Link href="/runs/new" className="landing-button landing-button-primary">
             Start Testing Free
           </Link>
-          <Link
-            href="/dashboard"
-            replace
-            className="landing-button landing-button-secondary"
-          >
+          <Link href="/dashboard" replace className="landing-button landing-button-secondary">
             View Dashboard
           </Link>
         </div>
       </div>
-
-      <div className="landing-hero-media">
+      <div className="landing-hero-media" ref={parallaxRef}>
         <div className="landing-hero-glow" />
         <Image
           src="/landing-page-hero.png"

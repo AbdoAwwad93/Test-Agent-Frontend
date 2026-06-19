@@ -44,6 +44,16 @@
   color: var(--on-surface);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+#product,
+#workflow,
+#insights,
+#features {
+  scroll-margin-top: 6.5rem; 
+}
 .landing-nav {
   position: sticky;
   top: 1.5rem;
@@ -544,5 +554,64 @@
   .landing-run-meta {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+.landing-nav-links a.active {
+  color: var(--primary);
+}
+
+
+@keyframes landingFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landingFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.landing-hero .landing-eyebrow {
+  animation: landingFadeUp 0.7s ease-out both;
+}
+
+.landing-hero h1 {
+  animation: landingFadeUp 0.8s ease-out 0.1s both;
+}
+
+.landing-hero .landing-lead {
+  animation: landingFadeUp 0.8s ease-out 0.25s both;
+}
+
+.landing-hero .landing-hero-actions {
+  animation: landingFadeUp 0.8s ease-out 0.4s both;
+}
+
+.landing-hero-media {
+  animation: landingFadeIn 1s ease-out 0.3s both;
+}
+
+/* Subtle parallax-style float on the hero image as you scroll */
+.landing-hero-image {
+  transition: transform 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-eyebrow,
+  .landing-hero h1,
+  .landing-hero .landing-lead,
+  .landing-hero .landing-hero-actions,
+  .landing-hero-media {
+    animation: none;
   }
 }
