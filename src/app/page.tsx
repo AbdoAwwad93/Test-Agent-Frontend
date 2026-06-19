@@ -5,7 +5,7 @@ import { InsightsDashboard } from "@/features/landing/components/InsightsDashboa
 import { CTASection } from "@/features/landing/components/CTASection";
 import { LandingFooter } from "@/features/landing/components/LandingFooter";
 import { FeaturesGrid } from "@/features/landing/components/FeaturesGrid";
-
+import "../features/landing/landing.css"
 export default function LandingPage() {
   return (
     <div className="landing-page">

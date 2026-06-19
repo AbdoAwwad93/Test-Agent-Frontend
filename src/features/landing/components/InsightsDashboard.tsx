@@ -1,4 +1,5 @@
 import { recentRuns } from "../landing.data";
+import "../landing.css"
 
 export function InsightsDashboard() {
   return (

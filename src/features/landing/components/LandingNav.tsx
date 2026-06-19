@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import "../landing.css"
 
 export function LandingNav() {
   return (

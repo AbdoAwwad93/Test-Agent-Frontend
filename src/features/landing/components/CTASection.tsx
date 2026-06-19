@@ -1,5 +1,5 @@
 import Link from "next/link";
-
+import "../landing.css"
 export function CTASection() {
   return (
     <section className="landing-section">
