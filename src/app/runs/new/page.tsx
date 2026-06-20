@@ -1,40 +1,46 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createRun } from '@/lib/api';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCreateRun } from "@/features/runs/hooks/UseCreateRun";
 
 export default function NewRun() {
   const router = useRouter();
-  const [url, setUrl] = useState('');
-  const [story, setStory] = useState('');
+  const [url, setUrl] = useState("");
+  const [story, setStory] = useState("");
   const [headless, setHeadless] = useState(true);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [validationError, setValidationError] = useState("");
 
-  const handleSubmit = async () => {
+  const { mutate: submitRun, isPending, error } = useCreateRun();
+
+  const handleSubmit = () => {
     if (!url || !story) {
-      setError('Please provide both URL and a User Story.');
+      setValidationError("Please provide both URL and a User Story.");
       return;
     }
-    setError('');
-    setLoading(true);
-    
-    try {
-      const data = await createRun({ url, story, headless });
-      router.push(`/runs/${data.run_id}`);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      setLoading(false);
-    }
+    setValidationError("");
+
+    submitRun(
+      { url, story, headless },
+      {
+        onSuccess: (data) => router.push(`/runs/${data.run_id}`),
+      }
+    );
   };
+
+  const displayError =
+    validationError ||
+    (error instanceof Error ? error.message : error ? "An unknown error occurred" : "");
 
   return (
     <div className="page active">
       <header className="page-header">
         <div>
           <h1 className="page-title">Design New Narrative</h1>
-          <p className="page-subtitle">Establish the parameters and starting point for your automated testing narrative.</p>
+          <p className="page-subtitle">
+            Establish the parameters and starting point for your automated
+            testing narrative.
+          </p>
         </div>
       </header>
 
@@ -45,7 +51,9 @@ export default function NewRun() {
               <span className="material-icons-round">link</span>
               Target URL
             </label>
-            <p className="form-hint">Provide the initial URL where the agent will begin its journey.</p>
+            <p className="form-hint">
+              Provide the initial URL where the agent will begin its journey.
+            </p>
             <input
               type="url"
               id="input-url"
@@ -54,7 +62,7 @@ export default function NewRun() {
               autoComplete="off"
               spellCheck="false"
               value={url}
-              onChange={e => setUrl(e.target.value)}
+              onChange={(e) => setUrl(e.target.value)}
             />
           </div>
 
@@ -63,14 +71,17 @@ export default function NewRun() {
               <span className="material-icons-round">auto_stories</span>
               User Story
             </label>
-            <p className="form-hint">Describe the user journey in natural language. The agent will interpret these instructions.</p>
+            <p className="form-hint">
+              Describe the user journey in natural language. The agent will
+              interpret these instructions.
+            </p>
             <textarea
               id="input-story"
               className="form-textarea"
               placeholder="User tries to log in with valid credentials, navigates to the dashboard, and verifies their profile information is displayed correctly..."
               rows={6}
               value={story}
-              onChange={e => setStory(e.target.value)}
+              onChange={(e) => setStory(e.target.value)}
             ></textarea>
           </div>
 
@@ -82,13 +93,15 @@ export default function NewRun() {
             <div className="toggle-row">
               <div>
                 <span className="toggle-label">Headless Browser</span>
-                <span className="toggle-sub">Run without visible browser window</span>
+                <span className="toggle-sub">
+                  Run without visible browser window
+                </span>
               </div>
               <label className="toggle-switch">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={headless}
-                  onChange={e => setHeadless(e.target.checked)}
+                  onChange={(e) => setHeadless(e.target.checked)}
                 />
                 <span className="toggle-slider"></span>
               </label>
@@ -97,25 +110,33 @@ export default function NewRun() {
 
           <div className="form-quote">
             <span className="material-icons-round">format_quote</span>
-            &ldquo;Ensure narratives are precise. Ambiguity leads to divergent exploration states.&rdquo;
+            &ldquo;Ensure narratives are precise. Ambiguity leads to divergent
+            exploration states.&rdquo;
           </div>
 
           <div className="form-actions">
-            <button className="btn btn-ghost" onClick={() => router.push('/dashboard')}>Cancel</button>
-            <button 
-              className="btn btn-primary btn-large" 
-              onClick={handleSubmit} 
-              disabled={loading}
+            <button
+              className="btn btn-ghost"
+              onClick={() => router.push("/dashboard")}
             >
-              <span className="material-icons-round">{loading ? 'hourglass_empty' : 'play_arrow'}</span>
-              {loading ? 'Initiating...' : 'Initiate Sequence'}
+              Cancel
+            </button>
+            <button
+              className="btn btn-primary btn-large"
+              onClick={handleSubmit}
+              disabled={isPending}
+            >
+              <span className="material-icons-round">
+                {isPending ? "hourglass_empty" : "play_arrow"}
+              </span>
+              {isPending ? "Initiating..." : "Initiate Sequence"}
             </button>
           </div>
 
-          {error && (
+          {displayError && (
             <div className="form-error">
               <span className="material-icons-round">error_outline</span>
-              <span>{error}</span>
+              <span>{displayError}</span>
             </div>
           )}
         </div>

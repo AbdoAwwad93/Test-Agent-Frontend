@@ -1,37 +1,28 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { fetchRuns, isRunActive, type RunRecord } from '@/lib/api';
-import Link from 'next/link';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useActiveRun } from "@/features/runs/hooks/UseActiveRun";
 
 export default function LiveExecutionStub() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const { data: activeRun, isLoading } = useActiveRun();
 
   useEffect(() => {
-    async function checkLive() {
-      try {
-        const data = await fetchRuns();
-        const activeRun = data.find((run: RunRecord) => isRunActive(run));
-        if (activeRun) {
-          router.replace(`/runs/${activeRun.id}`);
-          return;
-        }
-      } catch (err) {
-        console.error(err);
-      }
-      setLoading(false);
+    if (activeRun) {
+      router.replace(`/runs/${activeRun.id}`);
     }
-    checkLive();
-  }, [router]);
+  }, [activeRun, router]);
 
   return (
     <div className="page active">
       <header className="page-header">
         <div>
           <h1 className="page-title">Live Execution</h1>
-          <p className="page-subtitle" id="live-subtitle">No active run.</p>
+          <p className="page-subtitle" id="live-subtitle">
+            No active run.
+          </p>
         </div>
         <div className="live-controls">
           <div className="status-pill">
@@ -47,10 +38,14 @@ export default function LiveExecutionStub() {
           <p>Awaiting sequence initiation…</p>
         </div>
       </div>
-      
-      {!loading && (
-        <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
-           <Link href="/runs/new" className="btn btn-primary">Start a New Run</Link>
+
+      {!isLoading && !activeRun && (
+        <div
+          style={{ marginTop: "2rem", display: "flex", justifyContent: "center" }}
+        >
+          <Link href="/runs/new" className="btn btn-primary">
+            Start a New Run
+          </Link>
         </div>
       )}
     </div>

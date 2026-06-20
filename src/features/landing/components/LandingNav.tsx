@@ -1,0 +1,36 @@
+"use client";
+
+import { useRef } from "react";
+import Link from "next/link";
+import { ThemeToggle } from "@/components/ThemeToggle";
+
+import "../landing.css"
+import { useActiveSectionNav } from "../hooks/Usescrolleffects";
+
+export function LandingNav() {
+  const navRef = useRef<HTMLElement>(null);
+  useActiveSectionNav(navRef, ["product", "workflow", "insights", "features"]);
+
+  return (
+    <nav className="landing-nav" ref={navRef}>
+      <Link href="/" className="landing-brand">
+        Nomad AI Agent
+      </Link>
+      <div className="landing-nav-links">
+        <a href="#product">Product</a>
+        <a href="#workflow">Workflow</a>
+        <a href="#insights">Insights</a>
+        <a href="#features">Features</a>
+      </div>
+      <div className="landing-nav-actions">
+        <ThemeToggle />
+        <Link href="/dashboard" replace className="landing-link-button">
+          Dashboard
+        </Link>
+        <Link href="/runs/new" className="landing-button landing-button-primary">
+          Start Testing Free
+        </Link>
+      </div>
+    </nav>
+  );
+}

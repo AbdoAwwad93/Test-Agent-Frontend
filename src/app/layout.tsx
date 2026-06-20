@@ -3,6 +3,7 @@ import { Inter, Newsreader, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AppShell } from "@/components/AppShell";
+import { Providers } from "@/components/Providers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-ui" });
 const newsreader = Newsreader({
@@ -18,7 +19,6 @@ export const metadata: Metadata = {
   title: "Nomad AI Agent - Quiet Intelligence",
   description: "AI-driven browser testing tool.",
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,10 +35,12 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable}`}
       >
-        <ThemeProvider>
-          <AppShell>{children}</AppShell>
-        </ThemeProvider>
+        <Providers>
+          <ThemeProvider>
+            <AppShell>{children}</AppShell>
+          </ThemeProvider>
+        </Providers>
       </body>
     </html>
-  );
+  )
 }

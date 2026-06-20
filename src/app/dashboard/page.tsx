@@ -1,66 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  fetchRuns as fetchRunsApi,
-  sortRunsByNewest,
-  type RunRecord,
-} from "@/lib/api";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { computeRunStats } from "@/features/dashboard/utils/ComputeRunStats";
+import { useRuns } from "@/features/dashboard/hooks/UseRun";
 
 export default function Dashboard() {
   const router = useRouter();
-  const [runs, setRuns] = useState<RunRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: runs = [], isLoading, isError } = useRuns();
 
-  useEffect(() => {
-    async function loadRuns() {
-      try {
-        const data = await fetchRunsApi();
-        setRuns(sortRunsByNewest(data));
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadRuns();
-  }, []);
-
-  const total = runs.length;
-  let successCount = 0;
-  let totalDur = 0;
-  let finishedCount = 0;
-  let runsLast24h = 0;
-  const now = new Date().getTime();
-
-  for (const run of runs) {
-    if (run.overall_status === "pass" || run.goal_achieved === true) {
-      successCount++;
-    }
-    if (
-      run.overall_status !== "pending" &&
-      run.overall_status !== "running" &&
-      run.total_duration_ms
-    ) {
-      totalDur += run.total_duration_ms;
-      finishedCount++;
-    }
-    const age = now - new Date(run.created_at).getTime();
-    if (age <= 24 * 3600 * 1000) {
-      runsLast24h++;
-    }
-  }
-
-  const successRate = finishedCount
-    ? `${Math.round((successCount / finishedCount) * 100)}%`
-    : "--";
-  const avgDur = finishedCount
-    ? `${(totalDur / finishedCount / 1000).toFixed(1)}s`
-    : "--";
+  const stats = useMemo(() => computeRunStats(runs), [runs]);
 
   return (
     <div className="page active">
@@ -83,19 +34,23 @@ export default function Dashboard() {
       <div className="stats-grid">
         <div className="stat-card">
           <span className="stat-label">Total Executions</span>
-          <span className="stat-value">{loading ? "--" : total}</span>
+          <span className="stat-value">{isLoading ? "--" : stats.total}</span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Success Rate</span>
-          <span className="stat-value accent">{loading ? "--" : successRate}</span>
+          <span className="stat-value accent">
+            {isLoading ? "--" : stats.successRate}
+          </span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Avg Duration</span>
-          <span className="stat-value">{loading ? "--" : avgDur}</span>
+          <span className="stat-value">{isLoading ? "--" : stats.avgDur}</span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Last 24 h</span>
-          <span className="stat-value">{loading ? "--" : runsLast24h}</span>
+          <span className="stat-value">
+            {isLoading ? "--" : stats.runsLast24h}
+          </span>
         </div>
       </div>
 
@@ -104,11 +59,15 @@ export default function Dashboard() {
       </div>
 
       <div className="runs-list">
-        {loading ? (
+        {isLoading ? (
           <div className="skeleton-list">
             <div className="skeleton"></div>
             <div className="skeleton"></div>
             <div className="skeleton"></div>
+          </div>
+        ) : isError ? (
+          <div className="empty-state">
+            <p>Could not load runs. Please try again.</p>
           </div>
         ) : runs.length === 0 ? (
           <div className="empty-state">
@@ -147,9 +106,7 @@ export default function Dashboard() {
                   {run.overall_status}
                 </span>
                 {run.canceled && run.cancel_reason && (
-                  <span className="chip canceled">
-                    {run.cancel_reason}
-                  </span>
+                  <span className="chip canceled">{run.cancel_reason}</span>
                 )}
               </div>
             </div>
