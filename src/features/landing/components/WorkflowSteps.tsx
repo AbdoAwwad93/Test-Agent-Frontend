@@ -1,4 +1,4 @@
-import { steps } from "../landing.data";
+import { steps } from "../data/landing.data";
 import "../landing.css"
 
 export function WorkflowSteps() {

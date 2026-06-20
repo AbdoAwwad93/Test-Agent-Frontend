@@ -1,4 +1,4 @@
-import { features } from "../landing.data";
+import { features } from "../data/landing.data";
 import "../landing.css"
 
 export function FeaturesGrid() {

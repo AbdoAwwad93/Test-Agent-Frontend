@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import "../landing.css"
-import { useHeroParallax } from "../Usescrolleffects";
+import { useHeroParallax } from "../hooks/Usescrolleffects";
 
 export function Hero() {
   const parallaxRef = useHeroParallax();

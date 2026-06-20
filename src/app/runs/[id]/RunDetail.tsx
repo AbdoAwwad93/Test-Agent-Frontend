@@ -7,9 +7,9 @@ import { isRunActive } from '@/lib/api';
 import { useState } from 'react';
 
 import { DetailedExecutionLog } from '@/features/runDetails/components/DetailedExectionLog';
-import { useRun } from '@/hooks/Userun';
-import { useCancelRun } from '@/hooks/Usecancelrun';
-import { useRunStream } from '@/hooks/Userunstream';
+import { useRun } from '@/features/runDetails/hooks/UseRun';
+import { useCancelRun } from '@/features/runDetails/hooks/UseCancelRun';
+import { useRunStream } from '@/features/runDetails/hooks/UseRunStream';
 import { RunMeta } from '@/features/runDetails/components/RunMeta';
 import { RunHeader } from '@/features/runDetails/components/RunHeder';
 import { LiveExecutionLog } from '@/features/runDetails/components/LiveExecutionLog';

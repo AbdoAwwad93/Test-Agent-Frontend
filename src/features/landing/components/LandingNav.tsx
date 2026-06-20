@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 import "../landing.css"
-import { useActiveSectionNav } from "../Usescrolleffects";
+import { useActiveSectionNav } from "../hooks/Usescrolleffects";
 
 export function LandingNav() {
   const navRef = useRef<HTMLElement>(null);
