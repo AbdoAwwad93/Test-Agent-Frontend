@@ -4,7 +4,7 @@ import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { isRunActive } from '@/lib/api';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { DetailedExecutionLog } from '@/features/runDetails/components/DetailedExectionLog';
 import { useRun } from '@/features/runDetails/hooks/UseRun';
@@ -19,8 +19,9 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
   const { id } = use(params);
 
   const [openSteps, setOpenSteps] = useState<Set<number>>(new Set());
+  const [streamingFinished, setStreamingFinished] = useState(false);
 
-  const { data: run, isLoading, error: fetchError } = useRun(id);
+  const { data: run, isLoading, error: fetchError, refetch } = useRun(id);
 
   const isActive = run ? isRunActive(run) : false;
 
@@ -31,6 +32,18 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
   const liveMode = isActive && isStreaming;
   const steps = liveMode ? liveSteps : (run?.steps ?? []);
   const error = streamError || (fetchError instanceof Error ? fetchError.message : '');
+
+  useEffect(() => {
+    if (isStreaming) {
+      setStreamingFinished(true);
+      return;
+    }
+
+    if (streamingFinished && !isStreaming) {
+      refetch();
+      setStreamingFinished(false);
+    }
+  }, [isStreaming, streamingFinished, refetch]);
 
   const toggleStep = (idx: number) => {
     setOpenSteps((prev) => {
