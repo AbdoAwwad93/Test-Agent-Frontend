@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { computeRunStats } from "@/features/dashboard/utils/ComputeRunStats";
 import { useRuns } from "@/features/dashboard/hooks/UseRun";
-
+import "../../features/dashboard/dashboard.css"
 export default function Dashboard() {
   const router = useRouter();
   const { data: runs = [], isLoading, isError } = useRuns();
