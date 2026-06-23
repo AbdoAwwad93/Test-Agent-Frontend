@@ -1535,3 +1535,26 @@ h6,
 .theme-toggle .material-icons-round {
   font-size: 1.25rem;
 }
+
+
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--fail);
+  margin-top: -0.25rem;
+}
+
+.field-error .material-icons-round {
+  font-size: 1rem;
+}
+
+.form-input-error,
+.form-input-error:focus {
+  border-color: var(--fail);
+}
+
+.form-input-error:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--fail) 15%, transparent);
+}
