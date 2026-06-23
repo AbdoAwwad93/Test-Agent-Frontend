@@ -44,7 +44,7 @@ function Sidebar({
       : "online";
 
   const items = [
-    { href: "/", icon: "home", label: "Home" },
+   // { href: "/", icon: "home", label: "Home" },
     { href: "/dashboard", icon: "dashboard", label: "Dashboard" },
     { href: "/runs/new", icon: "add_circle", label: "New Run" },
     { href: "/runs/live", icon: "terminal", label: "Live Execution" },

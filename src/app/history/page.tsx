@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useRuns } from "@/features/dashboard/hooks/UseRun";
-
+import "../../features/history/history.css"
 export default function History() {
   const router = useRouter();
   const { data: runs = [], isLoading, isError } = useRuns();
