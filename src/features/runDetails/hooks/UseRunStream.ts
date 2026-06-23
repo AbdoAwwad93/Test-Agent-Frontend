@@ -4,7 +4,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import { API_URL, type RunRecord, type RunStep } from '@/lib/api';
 import { mergeStep } from '@/utils/stepMerge';
 
-type LiveStatus = 'connecting' | 'running' | 'cancel_requested' | 'disconnected' | 'error';
+type LiveStatus =
+  | 'connecting'
+  | 'running'
+  | 'cancel_requested'
+  | 'pause_requested'
+  | 'paused'
+  | 'resumed'
+  | 'disconnected'
+  | 'error';
 
 interface UseRunStreamResult {
   steps: RunStep[];
@@ -24,9 +32,12 @@ export function useRunStream(id: string, enabled: boolean): UseRunStreamResult {
       return;
     }
 
+    const cached = queryClient.getQueryData<RunRecord>(['run', id]);
+    const cachedSteps = cached?.steps ?? [];
+
     setIsStreaming(true);
     setLiveStatus('connecting');
-    setSteps([]);
+    setSteps(cachedSteps);
 
     const stream = new EventSource(`${API_URL}/api/runs/${id}/stream`);
 
@@ -50,6 +61,44 @@ export function useRunStream(id: string, enabled: boolean): UseRunStreamResult {
                 ? { ...old, canceled: true, cancel_reason: data.reason ?? old.cancel_reason }
                 : old,
             );
+            break;
+          }
+          case 'pause_requested': {
+            setLiveStatus('pause_requested');
+            queryClient.setQueryData<RunRecord>(['run', id], (old) =>
+              old ? { ...old, overall_status: 'pause_requested' } : old,
+            );
+            break;
+          }
+          case 'paused': {
+            queryClient.setQueryData<RunRecord>(['run', id], (old) =>
+              old
+                ? {
+                    ...old,
+                    paused: true,
+                    pause_checkpoint: data.checkpoint ?? null,
+                    overall_status: 'paused',
+                  }
+                : old,
+            );
+            setLiveStatus('paused');
+            setIsStreaming(false);
+            queryClient.invalidateQueries({ queryKey: ['run', id] });
+            stream.close();
+            break;
+          }
+          case 'resumed': {
+            queryClient.setQueryData<RunRecord>(['run', id], (old) =>
+              old
+                ? {
+                    ...old,
+                    paused: false,
+                    pause_checkpoint: null,
+                    overall_status: 'running',
+                  }
+                : old,
+            );
+            setLiveStatus('running');
             break;
           }
           case 'finished': {

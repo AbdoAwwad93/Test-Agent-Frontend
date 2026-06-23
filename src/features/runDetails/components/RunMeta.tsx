@@ -31,6 +31,12 @@ export function RunMeta({ run, runId, liveMode }: RunMetaProps) {
           {run.cancel_reason || 'Canceled'}
         </span>
       )}
+      {run.paused && (
+        <span className="meta-tag">
+          <span className="material-icons-round">pause_circle</span>
+          Paused
+        </span>
+      )}
       <span className="meta-tag">
         <span className="material-icons-round">tag</span>#{runId.substring(0, 8)}
       </span>

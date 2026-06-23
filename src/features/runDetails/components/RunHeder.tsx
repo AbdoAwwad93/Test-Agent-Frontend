@@ -6,9 +6,14 @@ interface RunHeaderProps {
   liveMode: boolean;
   liveStatus: string;
   isActive: boolean;
+  showControls: boolean;
   canceling: boolean;
   onBack: () => void;
   onCancel: () => void;
+  onPause?: () => void;
+  onResume?: () => void;
+  pausing?: boolean;
+  resuming?: boolean;
 }
 
 export function RunHeader({
@@ -17,9 +22,14 @@ export function RunHeader({
   liveMode,
   liveStatus,
   isActive,
+  showControls,
   canceling,
   onBack,
   onCancel,
+  onPause,
+  onResume,
+  pausing,
+  resuming,
 }: RunHeaderProps) {
   return (
     <header className="page-header">
@@ -33,28 +43,52 @@ export function RunHeader({
         </div>
       </div>
 
-      {!liveMode && run?.overall_status && (
+      {!liveMode && !showControls && run?.overall_status && (
         <div className={`verdict-badge ${run.overall_status}`}>
           {run.overall_status.toUpperCase()}
         </div>
       )}
 
-      {liveMode && (
+      {showControls && (
         <div className="live-controls">
           <div className="status-pill">
             <span
               className={`dot ${
-                liveStatus === 'running' ? 'running' : liveStatus === 'cancel_requested' ? 'warn' : 'idle'
+                liveStatus === 'running' || liveStatus === 'connecting'
+                  ? 'running'
+                  : liveStatus === 'cancel_requested' || liveStatus === 'pause_requested'
+                  ? 'warn'
+                  : run?.paused || liveStatus === 'paused'
+                  ? 'idle'
+                  : 'idle'
               }`}
             ></span>
             <span>
-              {liveStatus === 'running'
+              {liveStatus === 'running' || liveStatus === 'connecting'
                 ? 'Running'
-                : liveStatus === 'cancel_requested'
+                : liveStatus === 'pause_requested' || run?.overall_status === 'pause_requested'
+                  ? 'Pausing...'
+                  : liveStatus === 'paused' || run?.paused
+                  ? 'Paused'
+                  : liveStatus === 'cancel_requested'
                   ? 'Cancel Requested'
+                  : run?.overall_status === 'resuming'
+                  ? 'Resuming...'
                   : 'Disconnected'}
             </span>
           </div>
+          {isActive && run && !run.paused && (
+            <button className="btn btn-secondary" onClick={onPause} disabled={canceling || pausing || run.overall_status === 'pause_requested'}>
+              <span className="material-icons-round">pause_circle</span>
+              {pausing ? 'Pausing...' : 'Pause'}
+            </button>
+          )}
+          {run?.paused && (
+            <button className="btn btn-secondary" onClick={onResume} disabled={resuming ?? false}>
+              <span className="material-icons-round">play_circle</span>
+              {resuming ? 'Resuming...' : 'Resume'}
+            </button>
+          )}
           {isActive && (
             <button className="btn btn-secondary" onClick={onCancel} disabled={canceling}>
               <span className="material-icons-round">stop_circle</span>

@@ -2,13 +2,15 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { isRunActive } from '@/lib/api';
+import { isRunActive, shouldStreamRun, showRunControls } from '@/lib/api';
 
 import { useState, useEffect } from 'react';
 
 import { DetailedExecutionLog } from '@/features/runDetails/components/DetailedExectionLog';
 import { useRun } from '@/features/runDetails/hooks/UseRun';
 import { useCancelRun } from '@/features/runDetails/hooks/UseCancelRun';
+import { usePauseRun } from '@/features/runDetails/hooks/UsePauseRun';
+import { useResumeRun } from '@/features/runDetails/hooks/UseResumeRun';
 import { useRunStream } from '@/features/runDetails/hooks/UseRunStream';
 import { RunMeta } from '@/features/runDetails/components/RunMeta';
 import { RunHeader } from '@/features/runDetails/components/RunHeder';
@@ -24,13 +26,18 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
   const { data: run, isLoading, error: fetchError, refetch } = useRun(id);
 
   const isActive = run ? isRunActive(run) : false;
+  const streamEnabled = run ? shouldStreamRun(run) : false;
 
-  const { steps: liveSteps, liveStatus, streamError, isStreaming } = useRunStream(id, isActive);
+  const { steps: liveSteps, liveStatus, streamError, isStreaming } = useRunStream(id, streamEnabled);
 
   const cancelMutation = useCancelRun(id);
+  const pauseMutation = usePauseRun(id);
+  const resumeMutation = useResumeRun(id);
 
-  const liveMode = isActive && isStreaming;
-  const steps = liveMode ? liveSteps : (run?.steps ?? []);
+  const showControls = run ? showRunControls(run) : false;
+  const liveMode = streamEnabled || isStreaming || (run?.paused ?? false);
+  const steps =
+    liveSteps.length > 0 ? liveSteps : (run?.steps ?? []);
   const error = streamError || (fetchError instanceof Error ? fetchError.message : '');
 
   useEffect(() => {
@@ -60,6 +67,16 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
     cancelMutation.mutate('Stopped by user from dashboard');
   };
 
+  const handlePause = (reason?: string) => {
+    if (!run || pauseMutation.isPending) return;
+    pauseMutation.mutate(reason ?? 'Paused by user');
+  };
+
+  const handleResume = () => {
+    if (!run || resumeMutation.isPending) return;
+    resumeMutation.mutate();
+  };
+
   if (isLoading) {
     return <div className="page active" style={{ padding: '4rem' }}>Loading run data...</div>;
   }
@@ -83,12 +100,34 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
         liveMode={liveMode}
         liveStatus={liveStatus}
         isActive={isActive}
+        showControls={showControls}
         canceling={cancelMutation.isPending}
         onBack={() => router.replace('/dashboard')}
         onCancel={handleCancel}
+        onPause={() => handlePause()}
+        onResume={() => handleResume()}
+        pausing={pauseMutation.isPending}
+        resuming={resumeMutation.isPending}
       />
 
       {run && <RunMeta run={run} runId={id} liveMode={liveMode} />}
+
+      {run?.paused && (
+        <div className="Tester-block" style={{ marginTop: '1rem' }}>
+          <div className="Tester-label">
+            <span className="material-icons-round">pause_circle</span> Paused — Checkpoint Saved
+          </div>
+          <div style={{ padding: '1rem', background: '#fff', borderRadius: 8 }}>
+            {run.pause_checkpoint ? (
+              <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+                {JSON.stringify(run.pause_checkpoint, null, 2)}
+              </pre>
+            ) : (
+              <p>No checkpoint details available.</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {liveMode && (
         <div className="progress-wrap">
