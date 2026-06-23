@@ -50,7 +50,7 @@ type HealthResponse = {
   status: string;
 };
 
-type CreateRunInput = {
+export type CreateRunInput = {
   url: string;
   story: string;
   headless: boolean;
@@ -58,7 +58,7 @@ type CreateRunInput = {
   execution_mode?: "server" | "client_browser" | string;
 };
 
-type CreateRunResponse = {
+export type CreateRunResponse = {
   run_id: string;
 };
 
