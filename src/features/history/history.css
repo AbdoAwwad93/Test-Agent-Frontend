@@ -1,0 +1,223 @@
+.search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--surface-container-low);
+  border: 1.5px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 1rem;
+  width: min(100%, 360px);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+ 
+.search-wrap:hover {
+  border-color: var(--text-muted);
+}
+ 
+.search-wrap:focus-within {
+  border-color: var(--primary);
+  background: var(--surface-container-lowest);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+}
+ 
+.search-wrap .material-icons-round {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+}
+ 
+.search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: var(--on-surface);
+  width: 100%;
+  min-width: 0;
+}
+ 
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+ /* ============================================================================
+   PAGINATION — placed above the history-list, directly under the header
+   ============================================================================ */
+.pagination {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.pagination--top {
+  margin-bottom: 1.5rem;
+}
+
+.pagination-range {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  grid-column: 2;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.6rem;
+  background: transparent;
+  border: 1.5px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn .material-icons-round {
+  font-size: 1.1rem;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: var(--surface-container-highest);
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.pagination-btn.active {
+  background: var(--primary);
+  color: var(--surface);
+  border-color: var(--primary);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pagination-ellipsis {
+  padding: 0 0.35rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .pagination {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .pagination-range {
+    text-align: center;
+    grid-column: 1;
+  }
+
+  .pagination-controls {
+    grid-column: 1;
+    flex-wrap: wrap;
+  }
+}
+
+/* ============================================================================
+   HISTORY CONTROLS — search + status filter, stacked under each other,
+   sitting in the page-header's right-hand column
+   ============================================================================ */
+.history-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.status-filter-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.status-filter-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  padding: 0.4rem 0.9rem;
+  border-radius: 99px;
+  border: 1.5px solid var(--outline-variant);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.status-filter-btn:hover {
+  border-color: var(--text-muted);
+  color: var(--text-primary);
+  background: var(--surface-container-low);
+}
+
+/* Active state per status — reuses the same semantic colors as .chip */
+.status-filter-btn.active.all {
+  background: var(--surface-container-highest);
+  border-color: var(--surface-container-highest);
+  color: var(--on-surface);
+}
+
+.status-filter-btn.active.pass {
+  background: var(--pass-dim);
+  border-color: var(--pass);
+  color: var(--pass);
+}
+
+.status-filter-btn.active.fail {
+  background: var(--fail-dim);
+  border-color: var(--fail);
+  color: var(--fail);
+}
+
+.status-filter-btn.active.canceled {
+  background: var(--warn-dim);
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+@media (max-width: 860px) {
+  .history-controls {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .status-filter-group {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .history-controls {
+    width: 100%;
+  }
+
+  .status-filter-group {
+    justify-content: center;
+  }
+
+  .status-filter-btn {
+    flex: 1;
+    text-align: center;
+  }
+}

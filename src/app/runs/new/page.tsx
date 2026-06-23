@@ -9,16 +9,21 @@ export default function NewRun() {
   const [url, setUrl] = useState("");
   const [story, setStory] = useState("");
   const [headless, setHeadless] = useState(true);
-  const [validationError, setValidationError] = useState("");
+  const [urlError, setUrlError] = useState("");
+  const [storyError, setStoryError] = useState("");
 
   const { mutate: submitRun, isPending, error } = useCreateRun();
 
   const handleSubmit = () => {
-    if (!url || !story) {
-      setValidationError("Please provide both URL and a User Story.");
+    const nextUrlError = !url ? "Please provide a target URL." : "";
+    const nextStoryError = !story ? "Please describe a user story." : "";
+
+    setUrlError(nextUrlError);
+    setStoryError(nextStoryError);
+
+    if (nextUrlError || nextStoryError) {
       return;
     }
-    setValidationError("");
 
     submitRun(
       { url, story, headless },
@@ -28,9 +33,12 @@ export default function NewRun() {
     );
   };
 
-  const displayError =
-    validationError ||
-    (error instanceof Error ? error.message : error ? "An unknown error occurred" : "");
+  const submitError =
+    error instanceof Error
+      ? error.message
+      : error
+      ? "An unknown error occurred"
+      : "";
 
   return (
     <div className="page active">
@@ -57,13 +65,24 @@ export default function NewRun() {
             <input
               type="url"
               id="input-url"
-              className="form-input"
+              className={`form-input${urlError ? " form-input-error" : ""}`}
               placeholder="https://example.com"
               autoComplete="off"
               spellCheck="false"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={(e) => {
+                setUrl(e.target.value);
+                if (urlError) setUrlError("");
+              }}
+              aria-invalid={Boolean(urlError)}
+              aria-describedby={urlError ? "input-url-error" : undefined}
             />
+            {urlError && (
+              <span className="field-error" id="input-url-error">
+                <span className="material-icons-round">error_outline</span>
+                {urlError}
+              </span>
+            )}
           </div>
 
           <div className="form-group">
@@ -77,12 +96,25 @@ export default function NewRun() {
             </p>
             <textarea
               id="input-story"
-              className="form-textarea"
+              className={`form-textarea${
+                storyError ? " form-input-error" : ""
+              }`}
               placeholder="User tries to log in with valid credentials, navigates to the dashboard, and verifies their profile information is displayed correctly..."
               rows={6}
               value={story}
-              onChange={(e) => setStory(e.target.value)}
+              onChange={(e) => {
+                setStory(e.target.value);
+                if (storyError) setStoryError("");
+              }}
+              aria-invalid={Boolean(storyError)}
+              aria-describedby={storyError ? "input-story-error" : undefined}
             ></textarea>
+            {storyError && (
+              <span className="field-error" id="input-story-error">
+                <span className="material-icons-round">error_outline</span>
+                {storyError}
+              </span>
+            )}
           </div>
 
           <div className="form-group">
@@ -133,10 +165,10 @@ export default function NewRun() {
             </button>
           </div>
 
-          {displayError && (
+          {submitError && (
             <div className="form-error">
               <span className="material-icons-round">error_outline</span>
-              <span>{displayError}</span>
+              <span>{submitError}</span>
             </div>
           )}
         </div>

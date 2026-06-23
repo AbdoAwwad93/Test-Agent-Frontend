@@ -10,6 +10,7 @@ export function useRuns() {
     queryKey: ["runs"],
     queryFn: fetchRunsApi,
     select: sortRunsByNewest,
-    refetchInterval: 15000,
+    staleTime: 30_000, 
+    refetchOnWindowFocus: true,
   });
 }

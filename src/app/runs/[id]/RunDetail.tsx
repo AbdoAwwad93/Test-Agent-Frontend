@@ -35,6 +35,7 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
 
   useEffect(() => {
     if (isStreaming) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStreamingFinished(true);
       return;
     }

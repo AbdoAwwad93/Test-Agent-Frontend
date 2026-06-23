@@ -1,13 +1,15 @@
 "use client";
 
-import { fetchHealth } from "@/lib/api";
+import { useHealth } from "@/features/appShell/hooks/useRunAction";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import "../features/appShell/appShell.css"
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLandingPage = pathname === "/";
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   if (isLandingPage) {
     return <>{children}</>;
@@ -15,42 +17,34 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div id="app">
-      <Sidebar pathname={pathname} />
+      <Sidebar
+        pathname={pathname}
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen((prev) => !prev)}
+      />
       <main className="main">{children}</main>
     </div>
   );
 }
 
-function Sidebar({ pathname }: { pathname: string }) {
-  const [apiStatus, setApiStatus] = useState<"checking" | "online" | "offline">(
-    "checking",
-  );
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function loadHealth() {
-      try {
-        await fetchHealth();
-        if (mounted) {
-          setApiStatus("online");
-        }
-      } catch {
-        if (mounted) {
-          setApiStatus("offline");
-        }
-      }
-    }
-
-    loadHealth();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+function Sidebar({
+  pathname,
+  isOpen,
+  onToggle,
+}: {
+  pathname: string;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
+  const { data, isError, isPending } = useHealth();
+  const apiStatus: "checking" | "online" | "offline" = isPending
+    ? "checking"
+    : isError || !data
+      ? "offline"
+      : "online";
 
   const items = [
-    { href: "/", icon: "home", label: "Home" },
+   // { href: "/", icon: "home", label: "Home" },
     { href: "/dashboard", icon: "dashboard", label: "Dashboard" },
     { href: "/runs/new", icon: "add_circle", label: "New Run" },
     { href: "/runs/live", icon: "terminal", label: "Live Execution" },
@@ -58,16 +52,32 @@ function Sidebar({ pathname }: { pathname: string }) {
   ];
 
   return (
-    <nav className="sidebar">
-      <div className="sidebar-brand">
-        <div className="brand-icon">
-          <span className="material-icons-round">graphic_eq</span>
-        </div>
-        <div>
-          <span className="brand-name">Nomad AI Agent</span>
-          <span className="brand-sub">Quiet Intelligence</span>
-        </div>
+    <nav className={`sidebar${isOpen ? "" : " sidebar--collapsed"}`}>
+      <div className="sidebar-controls">
+        <button
+          type="button"
+          className="sidebar-toggle"
+          onClick={onToggle}
+          aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
+          aria-pressed={isOpen}
+          data-tooltip={isOpen ? undefined : "Expand sidebar"}
+        >
+          <span className="material-icons-round">view_sidebar</span>
+        </button>
       </div>
+
+      {isOpen && (
+        <div className="sidebar-brand">
+          <div className="brand-icon">
+            <span className="material-icons-round">graphic_eq</span>
+          </div>
+          <div>
+            <span className="brand-name">Nomad AI Agent</span>
+            <span className="brand-sub">Quiet Intelligence</span>
+          </div>
+        </div>
+      )}
+
       <div className="sidebar-nav">
         {items.map((item) => {
           const isActive =
@@ -76,39 +86,42 @@ function Sidebar({ pathname }: { pathname: string }) {
               (pathname === item.href ||
                 (item.href !== "/dashboard" &&
                   pathname.startsWith(`${item.href}/`))));
-
           return (
             <Link
               key={item.href}
               href={item.href}
               className={`nav-item${isActive ? " active" : ""}`}
+              data-tooltip={isOpen ? undefined : item.label}
             >
               <span className="material-icons-round">{item.icon}</span>
-              {item.label}
+              {isOpen && <span>{item.label}</span>}
             </Link>
           );
         })}
       </div>
-      <div className="sidebar-footer">
-        <div className="status-indicator">
-          <span
-            className={`dot ${
-              apiStatus === "online"
-                ? "pass"
+
+      {isOpen && (
+        <div className="sidebar-footer">
+          <div className="status-indicator">
+            <span
+              className={`dot ${
+                apiStatus === "online"
+                  ? "pass"
+                  : apiStatus === "offline"
+                    ? "fail"
+                    : "idle"
+              }`}
+            />
+            <span>
+              {apiStatus === "online"
+                ? "API Online"
                 : apiStatus === "offline"
-                  ? "fail"
-                  : "idle"
-            }`}
-          />
-          <span>
-            {apiStatus === "online"
-              ? "API Online"
-              : apiStatus === "offline"
-                ? "API Offline"
-                : "Checking API"}
-          </span>
+                  ? "API Offline"
+                  : "Checking API"}
+            </span>
+          </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 }

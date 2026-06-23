@@ -1,0 +1,136 @@
+
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--surface-container-low);
+  display: flex;
+  flex-direction: column;
+  padding: 2.5rem 0;
+  z-index: 10;
+  border-right: 1px solid var(--outline-variant);
+  transition: width 0.25s ease, min-width 0.25s ease, padding 0.25s ease;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 2rem 2.5rem;
+}
+
+.sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem 2rem 0;
+}
+
+.sidebar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 1.5rem 1.5rem;
+}
+
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--surface-container-highest);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+  background: var(--primary);
+  color: var(--surface);
+}
+
+.sidebar-toggle .material-icons-round {
+  font-size: 1.25rem;
+}
+
+.sidebar--collapsed {
+  width: 64px;
+  min-width: 64px;
+  padding: 1rem 0;
+  align-items: center;
+}
+
+.sidebar--collapsed .sidebar-nav {
+  align-items: center;
+  padding: 0;
+  width: 100%;
+  overflow: visible;
+}
+
+.sidebar--collapsed .nav-item {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  justify-content: center;
+}
+
+.sidebar--collapsed .sidebar-controls {
+  justify-content: center;
+  padding: 0 0 1.5rem;
+}
+
+@media (max-width: 860px) {
+  .sidebar-controls {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .sidebar-brand,
+  .sidebar-footer {
+    display: none;
+  }
+
+  .sidebar-nav {
+    padding: 0 0.75rem;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0.5rem;
+    overflow: visible;
+  }
+}
+
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-6px);
+  background: var(--on-surface);
+  color: var(--surface);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
+}
