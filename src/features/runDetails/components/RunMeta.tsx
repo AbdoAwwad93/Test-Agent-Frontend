@@ -4,17 +4,18 @@ interface RunMetaProps {
   run: RunRecord;
   runId: string;
   liveMode: boolean;
+  showRecording?: boolean;
   onToggleVideo?: () => void;
 }
 
-export function RunMeta({ run, runId, liveMode, onToggleVideo }: RunMetaProps) {
+export function RunMeta({ run, runId, liveMode, showRecording = false, onToggleVideo }: RunMetaProps) {
   return (
     <div className="run-meta-row" style={{ marginBottom: '2rem' }}>
       <span className="meta-tag">
         <span className="material-icons-round">link</span>
         {run.url}
       </span>
-      {!liveMode && (
+      {(showRecording || !liveMode) && (
         <>
           <span className="meta-tag">
             <span className="material-icons-round">timer</span>

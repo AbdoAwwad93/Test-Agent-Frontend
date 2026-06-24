@@ -24,6 +24,7 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
   const [openSteps, setOpenSteps] = useState<Set<number>>(new Set());
   const [streamingFinished, setStreamingFinished] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [streamEnded, setStreamEnded] = useState(false);
 
   const { data: run, isLoading, error: fetchError, refetch } = useRun(id);
 
@@ -44,14 +45,20 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
 
   useEffect(() => {
     if (isStreaming) {
+      // mark that streaming started
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setStreamingFinished(true);
       return;
     }
 
     if (streamingFinished && !isStreaming) {
-      refetch();
-      setStreamingFinished(false);
+      // streaming just ended — show recording button immediately while we refetch
+      setStreamEnded(true);
+      refetch().finally(() => {
+        setStreamingFinished(false);
+        // keep the button visible briefly to avoid flicker while cache updates
+        setTimeout(() => setStreamEnded(false), 500);
+      });
     }
   }, [isStreaming, streamingFinished, refetch]);
 
@@ -122,6 +129,7 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
           run={run}
           runId={id}
           liveMode={liveMode}
+          showRecording={streamEnded || !liveMode}
           onToggleVideo={() => setShowVideo((s) => !s)}
         />
       )}
