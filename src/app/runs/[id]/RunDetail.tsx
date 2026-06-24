@@ -209,13 +209,14 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
         style={liveMode ? {} : { maxHeight: 'none', background: 'transparent', padding: 0 }}
       >
         {liveMode ? (
-          <LiveExecutionLog steps={steps} />
+          <LiveExecutionLog steps={steps} targets={run?.targets} />
         ) : (
           <DetailedExecutionLog
             steps={steps}
             runId={id}
             openSteps={openSteps}
             onToggleStep={toggleStep}
+            targets={run?.targets}
           />
         )}
       </div>

@@ -4,9 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateRun } from "@/features/runs/hooks/UseCreateRun";
 
+type TargetEntry = { url: string; role: string };
+
 export default function NewRun() {
   const router = useRouter();
+  const [multiRole, setMultiRole] = useState(false);
   const [url, setUrl] = useState("");
+  const [targets, setTargets] = useState<TargetEntry[]>([
+    { url: "", role: "" },
+  ]);
   const [story, setStory] = useState("");
   const [headless, setHeadless] = useState(true);
   const [urlError, setUrlError] = useState("");
@@ -15,7 +21,13 @@ export default function NewRun() {
   const { mutate: submitRun, isPending, error } = useCreateRun();
 
   const handleSubmit = () => {
-    const nextUrlError = !url ? "Please provide a target URL." : "";
+    let nextUrlError = "";
+    if (multiRole) {
+      const emptyTarget = targets.some((t) => !t.url);
+      nextUrlError = emptyTarget ? "All target URLs are required." : "";
+    } else {
+      nextUrlError = !url ? "Please provide a target URL." : "";
+    }
     const nextStoryError = !story ? "Please describe a user story." : "";
 
     setUrlError(nextUrlError);
@@ -25,12 +37,35 @@ export default function NewRun() {
       return;
     }
 
-    submitRun(
-      { url, story, headless },
-      {
-        onSuccess: (data) => router.push(`/runs/${data.run_id}`),
-      }
-    );
+    const payload = multiRole
+      ? {
+          targets: targets.map((t) => ({
+            url: t.url,
+            role: t.role || null,
+          })),
+          story,
+          headless,
+        }
+      : { url, story, headless };
+
+    submitRun(payload, {
+      onSuccess: (data) => router.push(`/runs/${data.run_id}`),
+    });
+  };
+
+  const addTarget = () => {
+    setTargets([...targets, { url: "", role: "" }]);
+  };
+
+  const removeTarget = (idx: number) => {
+    if (targets.length <= 1) return;
+    setTargets(targets.filter((_, i) => i !== idx));
+  };
+
+  const updateTarget = (idx: number, field: "url" | "role", value: string) => {
+    const next = targets.map((t, i) => (i === idx ? { ...t, [field]: value } : t));
+    setTargets(next);
+    if (urlError) setUrlError("");
   };
 
   const submitError =
@@ -55,35 +90,118 @@ export default function NewRun() {
       <div className="form-container">
         <div className="form-card">
           <div className="form-group">
-            <label className="form-label" htmlFor="input-url">
-              <span className="material-icons-round">link</span>
-              Target URL
-            </label>
-            <p className="form-hint">
-              Provide the initial URL where the agent will begin its journey.
-            </p>
-            <input
-              type="url"
-              id="input-url"
-              className={`form-input${urlError ? " form-input-error" : ""}`}
-              placeholder="https://example.com"
-              autoComplete="off"
-              spellCheck="false"
-              value={url}
-              onChange={(e) => {
-                setUrl(e.target.value);
-                if (urlError) setUrlError("");
-              }}
-              aria-invalid={Boolean(urlError)}
-              aria-describedby={urlError ? "input-url-error" : undefined}
-            />
-            {urlError && (
-              <span className="field-error" id="input-url-error">
-                <span className="material-icons-round">error_outline</span>
-                {urlError}
-              </span>
-            )}
+            <div className="toggle-row">
+              <div>
+                <span className="toggle-label">Multi-Role Mode</span>
+                <span className="toggle-sub">
+                  Test a story across multiple roles and URLs
+                </span>
+              </div>
+              <label className="toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={multiRole}
+                  onChange={(e) => {
+                    setMultiRole(e.target.checked);
+                    if (urlError) setUrlError("");
+                  }}
+                />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
           </div>
+
+          {multiRole ? (
+            <div className="form-group">
+              <label className="form-label">
+                <span className="material-icons-round">link</span>
+                Targets
+              </label>
+              <p className="form-hint">
+                Add one target per role. The agent will process them in order.
+              </p>
+              {targets.map((t, idx) => (
+                <div key={idx} className="target-row" style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1 }}>
+                    <input
+                      type="url"
+                      className={`form-input${urlError ? " form-input-error" : ""}`}
+                      placeholder="https://example.com"
+                      value={t.url}
+                      onChange={(e) => updateTarget(idx, "url", e.target.value)}
+                      aria-invalid={Boolean(urlError)}
+                    />
+                  </div>
+                  <div style={{ width: '140px' }}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="role (e.g. customer)"
+                      value={t.role}
+                      onChange={(e) => updateTarget(idx, "role", e.target.value)}
+                    />
+                  </div>
+                  {targets.length > 1 && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => removeTarget(idx)}
+                      style={{ padding: '0.5rem' }}
+                      title="Remove target"
+                    >
+                      <span className="material-icons-round" style={{ fontSize: '1.2rem' }}>close</span>
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={addTarget}
+                style={{ marginTop: '0.25rem' }}
+              >
+                <span className="material-icons-round" style={{ fontSize: '1rem' }}>add</span>
+                Add Target
+              </button>
+              {urlError && (
+                <span className="field-error">
+                  <span className="material-icons-round">error_outline</span>
+                  {urlError}
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="form-group">
+              <label className="form-label" htmlFor="input-url">
+                <span className="material-icons-round">link</span>
+                Target URL
+              </label>
+              <p className="form-hint">
+                Provide the initial URL where the agent will begin its journey.
+              </p>
+              <input
+                type="url"
+                id="input-url"
+                className={`form-input${urlError ? " form-input-error" : ""}`}
+                placeholder="https://example.com"
+                autoComplete="off"
+                spellCheck="false"
+                value={url}
+                onChange={(e) => {
+                  setUrl(e.target.value);
+                  if (urlError) setUrlError("");
+                }}
+                aria-invalid={Boolean(urlError)}
+                aria-describedby={urlError ? "input-url-error" : undefined}
+              />
+              {urlError && (
+                <span className="field-error" id="input-url-error">
+                  <span className="material-icons-round">error_outline</span>
+                  {urlError}
+                </span>
+              )}
+            </div>
+          )}
 
           <div className="form-group">
             <label className="form-label" htmlFor="input-story">

@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getScreenshotUrl, type RunStep } from '@/lib/api';
+import { getScreenshotUrl, type RunStep, getRoleBadgeColor, hasMultipleTargets } from '@/lib/api';
 import { getStepKey, getStepOrder } from '@/utils/stepMerge';
 
 interface DetailedExecutionLogProps {
@@ -8,6 +8,7 @@ interface DetailedExecutionLogProps {
   runId: string;
   openSteps: Set<number>;
   onToggleStep: (idx: number) => void;
+  targets?: { url: string; role?: string | null }[];
 }
 
 export function DetailedExecutionLog({
@@ -15,6 +16,7 @@ export function DetailedExecutionLog({
   runId,
   openSteps,
   onToggleStep,
+  targets,
 }: DetailedExecutionLogProps) {
   if (steps.length === 0) {
     return (
@@ -24,6 +26,8 @@ export function DetailedExecutionLog({
       </div>
     );
   }
+
+  const showTargetBadge = targets && targets.length > 1;
 
   return (
     <>
@@ -38,11 +42,24 @@ export function DetailedExecutionLog({
         const stepKey = getStepKey(step, i);
         const isOpen = openSteps.has(i);
         const ssrc = getScreenshotUrl(runId, step.screenshot);
+        const ti = step.target_index ?? 0;
+        const targetRole = targets && targets[ti]?.role;
 
         return (
           <div key={stepKey} className={`exec-step ${isOpen ? 'open' : ''}`}>
             <div className="exec-step-header" onClick={() => onToggleStep(i)}>
               <span className="step-num">{String(stepOrder + 1).padStart(2, '0')}</span>
+              {showTargetBadge && targetRole && (
+                <span
+                  style={{
+                    background: getRoleBadgeColor(targetRole),
+                    color: '#fff', borderRadius: '999px', padding: '0 0.4rem',
+                    fontSize: '0.65rem', lineHeight: '1.2rem', marginRight: '0.25rem',
+                  }}
+                >
+                  {targetRole}
+                </span>
+              )}
               <span className="step-action-badge">{step.action}</span>
               <span className="step-desc">{step.description}</span>
               <span className={`material-icons-round step-status-icon ${step.status}`}>{icon}</span>
