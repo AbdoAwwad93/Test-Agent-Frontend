@@ -6,17 +6,27 @@ export function usePauseRun(id: string) {
 
   return useMutation({
     mutationFn: (reason?: string) => pauseRun(id, reason),
-    onMutate: () => {
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onMutate: async (reason?: string) => {
+      const previousRun = queryClient.getQueryData<RunRecord>(['run', id]);
+
       queryClient.setQueryData<RunRecord>(['run', id], (old) =>
         old ? { ...old, overall_status: 'pause_requested' } : old,
       );
+
+      return { previousRun };
     },
-    onSuccess: (data) => {
-      if (data.status === 'pause_requested') {
-        queryClient.setQueryData<RunRecord>(['run', id], (old) =>
-          old ? { ...old, overall_status: 'pause_requested' } : old,
-        );
+
+    onError: (_err, _reason, context) => {
+      if (context?.previousRun) {
+        queryClient.setQueryData<RunRecord>(['run', id], context.previousRun);
       }
+    },
+
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['run', id] });
     },
   });
 }
