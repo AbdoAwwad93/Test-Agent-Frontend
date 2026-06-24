@@ -7,8 +7,7 @@ export function usePauseRun(id: string) {
   return useMutation({
     mutationFn: (reason?: string) => pauseRun(id, reason),
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onMutate: async (reason?: string) => {
+    onMutate: async () => {
       const previousRun = queryClient.getQueryData<RunRecord>(['run', id]);
 
       queryClient.setQueryData<RunRecord>(['run', id], (old) =>
