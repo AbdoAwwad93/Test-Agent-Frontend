@@ -42,6 +42,7 @@ export type RunRecord = {
   steps?: RunStep[];
   // Pause/resume fields
   paused?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pause_checkpoint?: any | null;
   execution_mode?: "server" | "client_browser" | string;
 };

@@ -84,20 +84,13 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
         />
       )}
 
-      {run?.paused && (
-        <div className="Tester-block testerBlock">
-          <div className="Tester-label">
-            <span className="material-icons-round">pause_circle</span> Paused — Checkpoint Saved
-          </div>
-          <div className="checkpointPanel">
-            {run.pause_checkpoint ? (
-              <pre className="checkpointPre">{JSON.stringify(run.pause_checkpoint, null, 2)}</pre>
-            ) : (
-              <p>No checkpoint details available.</p>
-            )}
-          </div>
-        </div>
-      )}
+     {run?.paused && (
+    <div className="Tester-block testerBlock">
+      <div className="Tester-label">
+        <span className="material-icons-round">pause_circle</span> Paused — Checkpoint Saved
+      </div>
+    </div>
+)}
 
       {liveMode && (
         <div className="progress-wrap">
