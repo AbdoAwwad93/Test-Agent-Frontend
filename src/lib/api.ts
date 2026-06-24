@@ -168,6 +168,11 @@ export function getScreenshotUrl(runId: string, screenshot?: string | null) {
   return `${API_URL}/screenshot/${runId}/${screenshot}`;
 }
 
+/** URL for retrieving the recorded video for a run. */
+export function getVideoUrl(runId: string) {
+  return `${API_URL}/video/${runId}`;
+}
+
 const IN_PROGRESS_STATUSES = new Set<RunStatus>([
   "pending",
   "running",

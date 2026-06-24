@@ -2,7 +2,7 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { isRunActive, shouldStreamRun, showRunControls } from '@/lib/api';
+import { isRunActive, shouldStreamRun, showRunControls, getVideoUrl, getScreenshotUrl } from '@/lib/api';
 
 import { useState, useEffect } from 'react';
 
@@ -22,6 +22,7 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
 
   const [openSteps, setOpenSteps] = useState<Set<number>>(new Set());
   const [streamingFinished, setStreamingFinished] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
 
   const { data: run, isLoading, error: fetchError, refetch } = useRun(id);
 
@@ -77,6 +78,9 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
     resumeMutation.mutate();
   };
 
+  const firstScreenshot = run?.steps && run.steps.length > 0 ? run.steps[0].screenshot : null;
+  const posterUrl = firstScreenshot ? getScreenshotUrl(id, firstScreenshot) ?? undefined : undefined;
+
   if (isLoading) {
     return <div className="page active" style={{ padding: '4rem' }}>Loading run data...</div>;
   }
@@ -110,7 +114,41 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
         resuming={resumeMutation.isPending}
       />
 
-      {run && <RunMeta run={run} runId={id} liveMode={liveMode} />}
+      {run && (
+        <RunMeta
+          run={run}
+          runId={id}
+          liveMode={liveMode}
+          onToggleVideo={() => setShowVideo((s) => !s)}
+        />
+      )}
+
+      {showVideo && !liveMode && run && (
+        <div className="video-card" style={{ marginTop: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="material-icons-round">videocam</span>
+              <strong>Recording</strong>
+            </div>
+            <div>
+              <a href={getVideoUrl(id)} target="_blank" rel="noreferrer" className="meta-tag" style={{ padding: '0.25rem 0.5rem' }}>
+                <span className="material-icons-round">open_in_new</span>
+              </a>
+              <button type="button" onClick={() => setShowVideo(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', marginLeft: 8 }} aria-label="Close video">
+                <span className="material-icons-round">close</span>
+              </button>
+            </div>
+          </div>
+          <div>
+            <video
+              controls
+              style={{ width: '100%', borderRadius: 6, background: '#000', maxHeight: 360 }}
+              src={getVideoUrl(id)}
+              poster={posterUrl}
+            />
+          </div>
+        </div>
+      )}
 
       {run?.paused && (
         <div className="Tester-block" style={{ marginTop: '1rem' }}>

@@ -4,9 +4,10 @@ interface RunMetaProps {
   run: RunRecord;
   runId: string;
   liveMode: boolean;
+  onToggleVideo?: () => void;
 }
 
-export function RunMeta({ run, runId, liveMode }: RunMetaProps) {
+export function RunMeta({ run, runId, liveMode, onToggleVideo }: RunMetaProps) {
   return (
     <div className="run-meta-row" style={{ marginBottom: '2rem' }}>
       <span className="meta-tag">
@@ -23,6 +24,15 @@ export function RunMeta({ run, runId, liveMode }: RunMetaProps) {
             <span className="material-icons-round">checklist</span>
             {run.passed || 0} passed / {run.failed || 0} failed
           </span>
+          <button
+            type="button"
+            className="meta-tag"
+            onClick={onToggleVideo}
+            aria-pressed="false"
+          >
+            <span className="material-icons-round">videocam</span>
+            Recording
+          </button>
         </>
       )}
       {run.canceled && (
