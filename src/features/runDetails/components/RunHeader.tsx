@@ -43,7 +43,7 @@ export function RunHeader({
         </button>
         <div>
           <h1 className="page-title">{liveMode ? 'Live Execution' : 'Run Details'}</h1>
-          <p className="page-subtitle">{run?.story || `Run #${runId}`}</p>
+          <p className="page-subtitle">{`Run #${runId.substring(0, 8)}`}</p>
         </div>
       </div>
 
