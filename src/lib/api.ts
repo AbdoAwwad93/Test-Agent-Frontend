@@ -6,7 +6,11 @@ export type RunStatus =
   | "fail"
   | "pending"
   | "running"
-  | "canceled";
+  | "canceled"
+  | "pause_requested"
+  | "paused"
+  | "resuming"
+  | "resumed";
 
 export type RunStep = {
   type?: string;
@@ -36,19 +40,25 @@ export type RunRecord = {
   canceled?: boolean;
   cancel_reason?: string;
   steps?: RunStep[];
+  // Pause/resume fields
+  paused?: boolean;
+  pause_checkpoint?: any | null;
+  execution_mode?: "server" | "client_browser" | string;
 };
 
 type HealthResponse = {
   status: string;
 };
 
-type CreateRunInput = {
+export type CreateRunInput = {
   url: string;
   story: string;
   headless: boolean;
+  browser_hint?: string | null;
+  execution_mode?: "server" | "client_browser" | string;
 };
 
-type CreateRunResponse = {
+export type CreateRunResponse = {
   run_id: string;
 };
 
@@ -88,16 +98,47 @@ export async function fetchRun(runId: string): Promise<RunRecord> {
 
 export async function createRun(
   payload: CreateRunInput,
+  headers?: Record<string, string>,
 ): Promise<CreateRunResponse> {
   const response = await fetch(`${API_URL}/api/runs`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...(headers ?? {}),
     },
     body: JSON.stringify(payload),
   });
 
   return parseJson<CreateRunResponse>(response);
+}
+
+type PauseRunResponse = {
+  run_id: string;
+  status: string;
+};
+
+export async function pauseRun(runId: string, reason?: string): Promise<PauseRunResponse> {
+  const response = await fetch(`${API_URL}/api/runs/${runId}/pause`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason }),
+  });
+
+  return parseJson<PauseRunResponse>(response);
+}
+
+type ResumeRunResponse = {
+  run_id: string;
+  status: string;
+};
+
+export async function resumeRun(runId: string): Promise<ResumeRunResponse> {
+  const response = await fetch(`${API_URL}/api/runs/${runId}/resume`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  return parseJson<ResumeRunResponse>(response);
 }
 
 export async function cancelRun(
@@ -127,15 +168,64 @@ export function getScreenshotUrl(runId: string, screenshot?: string | null) {
   return `${API_URL}/screenshot/${runId}/${screenshot}`;
 }
 
-export function isRunActive(run?: Pick<RunRecord, "overall_status" | "canceled"> | null) {
-  if (!run) {
+/** URL for retrieving the recorded video for a run. */
+export function getVideoUrl(runId: string) {
+  return `${API_URL}/video/${runId}`;
+}
+
+const IN_PROGRESS_STATUSES = new Set<RunStatus>([
+  "pending",
+  "running",
+  "pause_requested",
+  "resuming",
+  "resumed",
+]);
+
+const STREAM_STATUSES = new Set<RunStatus>([
+  "pending",
+  "running",
+  "pause_requested",
+  "resuming",
+  "resumed",
+]);
+
+export function isRunActive(
+  run?: Pick<RunRecord, "overall_status" | "canceled" | "paused"> | null,
+) {
+  if (!run || run.canceled) {
     return false;
   }
 
-  return (
-    !run.canceled &&
-    (run.overall_status === "pending" || run.overall_status === "running")
-  );
+  if (run.paused && run.overall_status !== "resuming") {
+    return false;
+  }
+
+  return IN_PROGRESS_STATUSES.has(run.overall_status);
+}
+
+/** Keep SSE open through pause/resume transitions until the run is fully paused or finished. */
+export function shouldStreamRun(
+  run?: Pick<RunRecord, "overall_status" | "canceled" | "paused"> | null,
+) {
+  if (!run || run.canceled) {
+    return false;
+  }
+
+  if (run.paused && run.overall_status !== "resuming") {
+    return false;
+  }
+
+  return STREAM_STATUSES.has(run.overall_status);
+}
+
+export function showRunControls(
+  run?: Pick<RunRecord, "overall_status" | "canceled" | "paused"> | null,
+): boolean {
+  if (!run || run.canceled) {
+    return false;
+  }
+
+  return isRunActive(run) || Boolean(run.paused);
 }
 
 export function sortRunsByNewest<T extends Pick<RunRecord, "created_at">>(

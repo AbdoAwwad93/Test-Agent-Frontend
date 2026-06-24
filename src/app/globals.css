@@ -1060,6 +1060,26 @@ h6,
   white-space: pre-wrap;
 }
 
+/* Make meta-tag buttons look like the meta ovals */
+button.meta-tag {
+  border: none;
+  cursor: pointer;
+  background: var(--surface-container-lowest);
+}
+
+/* Compact themed video card shown under the meta row */
+.video-card {
+  background: var(--surface-container-lowest);
+  padding: 0.75rem;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px var(--shadow-color, rgba(0, 0, 0, 0.12));
+  max-width: 760px;
+}
+
+.video-card .meta-tag {
+  padding: 0.25rem 0.5rem;
+}
+
 .execution-log {
   display: flex;
   flex-direction: column;
