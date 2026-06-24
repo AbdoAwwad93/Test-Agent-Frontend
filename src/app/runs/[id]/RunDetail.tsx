@@ -15,6 +15,7 @@ import { useRunStream } from '@/features/runDetails/hooks/UseRunStream';
 import { RunMeta } from '@/features/runDetails/components/RunMeta';
 import { RunHeader } from '@/features/runDetails/components/RunHeader';
 import { LiveExecutionLog } from '@/features/runDetails/components/LiveExecutionLog';
+import { StoryBlock } from '@/features/runDetails/components/StoryBlock';
 
 export default function RunDetail({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -109,6 +110,8 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
         pausing={pauseMutation.isPending}
         resuming={resumeMutation.isPending}
       />
+
+      <StoryBlock story={run?.story} />
 
       {run && <RunMeta run={run} runId={id} liveMode={liveMode} />}
 
