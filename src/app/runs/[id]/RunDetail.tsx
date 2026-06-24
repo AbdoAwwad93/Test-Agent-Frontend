@@ -120,13 +120,14 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
 
       <div className={liveMode ? 'log-container' : 'execution-log logContainerStatic'}>
         {liveMode ? (
-          <LiveExecutionLog steps={steps} />
+          <LiveExecutionLog steps={steps} targets={run?.targets} />
         ) : (
           <DetailedExecutionLog
             steps={steps}
             runId={id}
             openSteps={openSteps}
             onToggleStep={toggleStep}
+            targets={run?.targets}
           />
         )}
       </div>

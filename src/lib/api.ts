@@ -12,6 +12,11 @@ export type RunStatus =
   | "resuming"
   | "resumed";
 
+export type Target = {
+  url: string;
+  role?: string | null;
+};
+
 export type RunStep = {
   type?: string;
   step_index?: number;
@@ -24,12 +29,14 @@ export type RunStep = {
   target?: string;
   value?: string;
   screenshot?: string;
+  target_index?: number;
 };
 
 export type RunRecord = {
   id: string;
   story: string;
   url: string;
+  targets?: Target[];
   created_at: string;
   overall_status: RunStatus;
   goal_achieved?: boolean;
@@ -52,7 +59,8 @@ type HealthResponse = {
 };
 
 export type CreateRunInput = {
-  url: string;
+  url?: string;
+  targets?: { url: string; role?: string | null }[];
   story: string;
   headless: boolean;
   browser_hint?: string | null;
@@ -101,13 +109,27 @@ export async function createRun(
   payload: CreateRunInput,
   headers?: Record<string, string>,
 ): Promise<CreateRunResponse> {
+  const body: Record<string, unknown> = {
+    story: payload.story,
+    headless: payload.headless,
+  };
+
+  if (payload.targets && payload.targets.length > 0) {
+    body.targets = payload.targets;
+  } else if (payload.url) {
+    body.url = payload.url;
+  }
+
+  if (payload.browser_hint) body.browser_hint = payload.browser_hint;
+  if (payload.execution_mode) body.execution_mode = payload.execution_mode;
+
   const response = await fetch(`${API_URL}/api/runs`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       ...(headers ?? {}),
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   });
 
   return parseJson<CreateRunResponse>(response);
@@ -227,6 +249,28 @@ export function showRunControls(
   }
 
   return isRunActive(run) || Boolean(run.paused);
+}
+
+export function hasMultipleTargets(run: RunRecord): boolean {
+  return !!(run.targets && run.targets.length > 1);
+}
+
+export function getTargetLabel(run: RunRecord): string {
+  if (!run.targets || run.targets.length === 0) return run.url;
+  if (run.targets.length === 1) return run.targets[0].role || run.url;
+  const roles = run.targets.map((t) => t.role || 'default').join(', ');
+  return `${run.targets.length} targets: ${roles}`;
+}
+
+export function getRoleBadgeColor(role?: string | null): string {
+  switch ((role || '').toLowerCase()) {
+    case 'admin': return '#ef4444';
+    case 'driver': return '#22c55e';
+    case 'customer': return '#3b82f6';
+    case 'manager': return '#f59e0b';
+    case 'viewer': return '#8b5cf6';
+    default: return '#6b7280';
+  }
 }
 
 export function sortRunsByNewest<T extends Pick<RunRecord, "created_at">>(
