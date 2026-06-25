@@ -1,39 +1,30 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
+import { useRegister } from "@/features/Auth/hooks/UseRegister";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register } = useAuth();
+  const { mutateAsync: register, isPending, error } = useRegister();
+
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setError("");
-    setSubmitting(true);
     try {
-      await register({
-        email,
-        username,
-        password,
-        full_name: fullName || null,
-      });
+      await register({ email, username, password, full_name: fullName || null });
       router.replace("/dashboard");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
-    } finally {
-      setSubmitting(false);
+    } catch {
     }
   }
+
+  const errorMessage = error instanceof Error ? error.message : null;
 
   return (
     <div className="auth-page">
@@ -43,10 +34,10 @@ export default function RegisterPage() {
           <p className="auth-subtitle">Join Nomad AI Agent</p>
         </div>
 
-        {error && (
+        {errorMessage && (
           <div className="form-error">
             <span className="material-icons-round">error</span>
-            {error}
+            {errorMessage}
           </div>
         )}
 
@@ -131,9 +122,9 @@ export default function RegisterPage() {
         <button
           type="submit"
           className="btn btn-primary btn-large auth-submit"
-          disabled={submitting}
+          disabled={isPending}
         >
-          {submitting ? "Creating account…" : "Create Account"}
+          {isPending ? "Creating account…" : "Create Account"}
         </button>
 
         <p className="auth-footer">

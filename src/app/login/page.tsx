@@ -1,30 +1,28 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
+import { useLogin } from "@/features/Auth/hooks/UseLogin";
+import "../../features/Auth/auth.css";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { mutateAsync: login, isPending } = useLogin();
+
   const [loginStr, setLoginStr] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
-    setSubmitting(true);
     try {
       await login({ login: loginStr, password });
       router.replace("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
-    } finally {
-      setSubmitting(false);
     }
   }
 
@@ -70,7 +68,7 @@ export default function LoginPage() {
               id="password"
               className="form-input"
               type={showPassword ? "text" : "password"}
-              placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -92,9 +90,9 @@ export default function LoginPage() {
         <button
           type="submit"
           className="btn btn-primary btn-large auth-submit"
-          disabled={submitting}
+          disabled={isPending}
         >
-          {submitting ? "Logging in…" : "Log In"}
+          {isPending ? "Logging in…" : "Log In"}
         </button>
 
         <p className="auth-footer">
