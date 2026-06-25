@@ -32,14 +32,26 @@ export function LandingNav() {
 
       <div className="landing-nav-actions">
         <ThemeToggle />
-        {isAuthenticated ? (
+         {isAuthenticated ? (
           <Link href="/dashboard" replace className="landing-link-button landing-user-btn">
             <span className="landing-avatar-mini">
               {(user?.full_name || user?.username || "U").charAt(0).toUpperCase()}
             </span>
             Dashboard
           </Link>
-        ) : null}
+        ) : (
+          <>
+            <Link href="/login" className="landing-link-button">
+              Log In
+            </Link>
+            <Link href="/register" className="landing-link-button">
+              Sign Up
+            </Link>
+            <Link href="/dashboard" replace className="landing-link-button">
+              Dashboard
+            </Link>
+          </>
+        )}
         <Link href="/runs/new" className="landing-button landing-button-primary">
           Start Testing Free
         </Link>
