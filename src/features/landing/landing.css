@@ -114,15 +114,23 @@ html {
 }
 
 .landing-nav-links a,
+.landing-nav-links button,
 .landing-footer-links a,
 .landing-link-button {
   color: var(--text-secondary);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
+  /* reset button styles */
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
 }
-
 .landing-nav-links a:hover,
+.landing-nav-links button:hover,
 .landing-footer-links a:hover,
 .landing-link-button:hover {
   color: var(--primary);
@@ -576,11 +584,10 @@ html {
     flex-direction: column;
   }
 }
-.landing-nav-links a.active {
+.landing-nav-links a.active,
+.landing-nav-links button.active {
   color: var(--primary);
 }
-
-
 @keyframes landingFadeUp {
   from {
     opacity: 0;
@@ -635,3 +642,4 @@ html {
     animation: none;
   }
 }
+
