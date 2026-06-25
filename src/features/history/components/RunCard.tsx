@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { type RunRecord, hasMultipleTargets, getRoleBadgeColor } from "@/lib/api";
 
 interface RunCardProps {
@@ -15,6 +16,17 @@ export function RunCard({ run, onClick }: RunCardProps) {
         <div className="run-story">{run.story}</div>
         <div className="run-meta">
           <span className="run-id">{run.id.substring(0, 8)}</span>
+          {run.project_id && (
+            <div className="run-meta-item" onClick={(e) => e.stopPropagation()}>
+              <span className="material-icons-round">folder</span>
+              <Link
+                href={`/projects/${run.project_id}`}
+                style={{ color: "var(--primary)", textDecoration: "underline" }}
+              >
+                Project
+              </Link>
+            </div>
+          )}
           {hasMultipleTargets(run) ? (
             <div className="run-meta-item" style={{ gap: '0.25rem', flexWrap: 'wrap' }}>
               <span className="material-icons-round" style={{ fontSize: '1rem' }}>link</span>

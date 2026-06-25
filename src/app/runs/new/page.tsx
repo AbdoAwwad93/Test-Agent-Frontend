@@ -1,13 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { useCreateRun } from "@/features/runs/hooks/UseCreateRun";
+import { fetchProjects, type ProjectRecord } from "@/lib/api";
 
 type TargetEntry = { url: string; role: string };
 
 export default function NewRun() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const preselectedProjectId = searchParams.get("project_id") || "";
+
   const [multiRole, setMultiRole] = useState(false);
   const [url, setUrl] = useState("");
   const [targets, setTargets] = useState<TargetEntry[]>([
@@ -15,10 +20,16 @@ export default function NewRun() {
   ]);
   const [story, setStory] = useState("");
   const [headless, setHeadless] = useState(true);
+  const [projectId, setProjectId] = useState(preselectedProjectId);
   const [urlError, setUrlError] = useState("");
   const [storyError, setStoryError] = useState("");
 
   const { mutate: submitRun, isPending, error } = useCreateRun();
+
+  const { data: projects = [] } = useQuery<ProjectRecord[]>({
+    queryKey: ["projects"],
+    queryFn: fetchProjects,
+  });
 
   const handleSubmit = () => {
     let nextUrlError = "";
@@ -37,7 +48,7 @@ export default function NewRun() {
       return;
     }
 
-    const payload = multiRole
+    const basePayload = multiRole
       ? {
           targets: targets.map((t) => ({
             url: t.url,
@@ -48,8 +59,15 @@ export default function NewRun() {
         }
       : { url, story, headless };
 
+    const payload = {
+      ...basePayload,
+      ...(projectId ? { project_id: projectId } : {}),
+    };
+
     submitRun(payload, {
-      onSuccess: (data) => router.push(`/runs/${data.run_id}`),
+      onSuccess: (data) => {
+        router.push(`/runs/${data.run_id}`);
+      },
     });
   };
 
@@ -89,6 +107,28 @@ export default function NewRun() {
 
       <div className="form-container">
         <div className="form-card">
+          <div className="form-group">
+            <label className="form-label">
+              <span className="material-icons-round">folder</span>
+              Project (optional)
+            </label>
+            <p className="form-hint">
+              Associate this run with a project to keep related runs organized.
+            </p>
+            <select
+              className="form-input"
+              value={projectId}
+              onChange={(e) => setProjectId(e.target.value)}
+            >
+              <option value="">-- No project --</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="form-group">
             <div className="toggle-row">
               <div>

@@ -79,8 +79,19 @@ export type RunStep = {
   target_index?: number;
 };
 
+export type ProjectRecord = {
+  id: string;
+  user_id?: string;
+  name: string;
+  description?: string | null;
+  created_at: number;
+  created_at_iso: string;
+  run_count: number;
+};
+
 export type RunRecord = {
   id: string;
+  project_id?: string | null;
   story: string;
   url: string;
   targets?: Target[];
@@ -110,6 +121,7 @@ export type CreateRunInput = {
   targets?: { url: string; role?: string | null }[];
   story: string;
   headless: boolean;
+  project_id?: string | null;
   browser_hint?: string | null;
   execution_mode?: "server" | "client_browser" | string;
 };
@@ -147,6 +159,11 @@ export async function fetchRuns(): Promise<RunRecord[]> {
   return parseJson<RunRecord[]>(response);
 }
 
+export async function fetchRunsByProject(projectId: string): Promise<RunRecord[]> {
+  const response = await authFetch(`${API_URL}/api/runs?project_id=${encodeURIComponent(projectId)}`);
+  return parseJson<RunRecord[]>(response);
+}
+
 export async function fetchRun(runId: string): Promise<RunRecord> {
   const response = await authFetch(`${API_URL}/api/runs/${runId}`);
   return parseJson<RunRecord>(response);
@@ -167,6 +184,7 @@ export async function createRun(
     body.url = payload.url;
   }
 
+  if (payload.project_id) body.project_id = payload.project_id;
   if (payload.browser_hint) body.browser_hint = payload.browser_hint;
   if (payload.execution_mode) body.execution_mode = payload.execution_mode;
 
@@ -454,6 +472,38 @@ export async function createApiToken(
 
 export async function revokeApiToken(tokenId: string): Promise<void> {
   await authFetch(`${API_URL}/api/auth/api-tokens/${tokenId}`, {
+    method: "DELETE",
+  });
+}
+
+// ── Project API functions ──────────────────────────────────────────────
+
+export async function fetchProjects(): Promise<ProjectRecord[]> {
+  const response = await authFetch(`${API_URL}/api/projects`);
+  return parseJson<ProjectRecord[]>(response);
+}
+
+export async function fetchProject(projectId: string): Promise<ProjectRecord> {
+  const response = await authFetch(`${API_URL}/api/projects/${projectId}`);
+  return parseJson<ProjectRecord>(response);
+}
+
+export async function fetchProjectRuns(projectId: string): Promise<RunRecord[]> {
+  const response = await authFetch(`${API_URL}/api/projects/${projectId}/runs`);
+  return parseJson<RunRecord[]>(response);
+}
+
+export async function createProject(name: string, description?: string): Promise<ProjectRecord> {
+  const response = await authFetch(`${API_URL}/api/projects`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, description }),
+  });
+  return parseJson<ProjectRecord>(response);
+}
+
+export async function deleteProject(projectId: string): Promise<void> {
+  await authFetch(`${API_URL}/api/projects/${projectId}`, {
     method: "DELETE",
   });
 }
