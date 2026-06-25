@@ -3,14 +3,23 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { computeRunStats } from "@/features/dashboard/utils/ComputeRunStats";
 import { useRuns } from "@/features/dashboard/hooks/UseRun";
-import { hasMultipleTargets, getRoleBadgeColor } from "@/lib/api";
+import { fetchProjects, hasMultipleTargets, getRoleBadgeColor } from "@/lib/api";
 import "../../features/dashboard/dashboard.css"
 export default function Dashboard() {
   const router = useRouter();
   const { data: runs = [], isLoading, isError } = useRuns();
+  const { data: projects = [] } = useQuery({
+    queryKey: ["projects"],
+    queryFn: fetchProjects,
+  });
+  const projectMap = useMemo(
+    () => new Map(projects.map((p) => [p.id, p.name])),
+    [projects]
+  );
 
   const stats = useMemo(() => computeRunStats(runs), [runs]);
 
@@ -86,6 +95,17 @@ export default function Dashboard() {
                 <div className="run-story">{run.story}</div>
                 <div className="run-meta">
                   <span className="run-id">{run.id.substring(0, 8)}</span>
+                  {run.project_id && projectMap.has(run.project_id) && (
+                    <Link
+                      href={`/projects/${run.project_id}`}
+                      className="run-meta-item"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ color: "var(--primary)" }}
+                    >
+                      <span className="material-icons-round" style={{ fontSize: '1rem' }}>folder</span>
+                      <span style={{ textDecoration: "underline" }}>{projectMap.get(run.project_id)}</span>
+                    </Link>
+                  )}
                   {hasMultipleTargets(run) ? (
                     <div className="run-meta-item" style={{ gap: '0.25rem', flexWrap: 'wrap' }}>
                       <span className="material-icons-round" style={{ fontSize: '1rem' }}>link</span>

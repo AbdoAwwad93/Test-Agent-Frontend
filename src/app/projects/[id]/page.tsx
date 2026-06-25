@@ -141,7 +141,7 @@ export default function ProjectDetailPage() {
       ) : (
         <div className="history-list">
           {runs.map((run) => (
-            <RunCard key={run.id} run={run} onClick={() => router.push(`/runs/${run.id}`)} />
+            <RunCard key={run.id} run={run} onClick={() => router.push(`/runs/${run.id}`)} hideProject />
           ))}
         </div>
       )}
