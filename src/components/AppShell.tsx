@@ -1,18 +1,54 @@
 "use client";
 
 import { useHealth } from "@/features/appShell/hooks/useRunAction";
+import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect, type ReactNode } from "react";
 import "../features/appShell/appShell.css"
+
+const PROTECTED_ROUTES = [
+  "/dashboard",
+  "/history",
+  "/runs/new",
+  "/runs/live",
+  "/runs",
+];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { status, user } = useAuth();
   const isLandingPage = pathname === "/";
+  const isAuthPage = pathname === "/login" || pathname === "/register";
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  if (isLandingPage) {
+  // Redirect to login when accessing protected routes while unauthenticated
+  const isProtected = PROTECTED_ROUTES.some(
+    (r) => pathname === r || pathname.startsWith(`${r}/`),
+  );
+
+  useEffect(() => {
+    if (status === "unauthenticated" && isProtected) {
+      router.replace("/login");
+    }
+  }, [status, isProtected, router]);
+
+  if (status === "loading") {
+    return (
+      <div className="auth-loading">
+        <span className="material-icons-round">graphic_eq</span>
+      </div>
+    );
+  }
+
+  if (isLandingPage || isAuthPage) {
     return <>{children}</>;
+  }
+
+  // While redirecting, render nothing
+  if (status === "unauthenticated" && isProtected) {
+    return null;
   }
 
   return (
@@ -21,6 +57,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         pathname={pathname}
         isOpen={isSidebarOpen}
         onToggle={() => setIsSidebarOpen((prev) => !prev)}
+        user={user}
+        status={status}
       />
       <main className="main">{children}</main>
     </div>
@@ -31,12 +69,17 @@ function Sidebar({
   pathname,
   isOpen,
   onToggle,
+  user,
+  status,
 }: {
   pathname: string;
   isOpen: boolean;
   onToggle: () => void;
+  user: ReturnType<typeof useAuth>["user"];
+  status: ReturnType<typeof useAuth>["status"];
 }) {
   const { data, isError, isPending } = useHealth();
+  const { logout } = useAuth();
   const apiStatus: "checking" | "online" | "offline" = isPending
     ? "checking"
     : isError || !data
@@ -44,7 +87,6 @@ function Sidebar({
       : "online";
 
   const items = [
-   // { href: "/", icon: "home", label: "Home" },
     { href: "/dashboard", icon: "dashboard", label: "Dashboard" },
     { href: "/runs/new", icon: "add_circle", label: "New Run" },
     { href: "/runs/live", icon: "terminal", label: "Live Execution" },
@@ -102,6 +144,33 @@ function Sidebar({
 
       {isOpen && (
         <div className="sidebar-footer">
+          {status === "authenticated" && user ? (
+            <div className="auth-section">
+              <div className="auth-user">
+                <div className="auth-avatar">
+                  {user.full_name?.charAt(0).toUpperCase() || user.username.charAt(0).toUpperCase()}
+                </div>
+                <div className="auth-user-info">
+                  <span className="auth-user-name">{user.full_name || user.username}</span>
+                  <span className="auth-user-email">{user.email}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="auth-logout-btn"
+                onClick={logout}
+                data-tooltip="Log out"
+                aria-label="Log out"
+              >
+                <span className="material-icons-round">logout</span>
+              </button>
+            </div>
+          ) : (
+            <div className="auth-links">
+              <Link href="/login" className="btn btn-primary btn-small">Log In</Link>
+              <Link href="/register" className="btn btn-secondary btn-small">Sign Up</Link>
+            </div>
+          )}
           <div className="status-indicator">
             <span
               className={`dot ${

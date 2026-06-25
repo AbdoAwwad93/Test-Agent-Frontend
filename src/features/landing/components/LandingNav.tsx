@@ -3,12 +3,15 @@
 import { useRef } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/lib/auth-context";
 
 import "../landing.css"
 import { useActiveSectionNav } from "../hooks/Usescrolleffects";
 
 export function LandingNav() {
   const navRef = useRef<HTMLElement>(null);
+  const { status, user } = useAuth();
+  const isAuthenticated = status === "authenticated";
   useActiveSectionNav(navRef, ["product", "workflow", "insights", "features"]);
 
   return (
@@ -24,9 +27,26 @@ export function LandingNav() {
       </div>
       <div className="landing-nav-actions">
         <ThemeToggle />
-        <Link href="/dashboard" replace className="landing-link-button">
-          Dashboard
-        </Link>
+        {isAuthenticated ? (
+          <Link href="/dashboard" replace className="landing-link-button landing-user-btn">
+            <span className="landing-avatar-mini">
+              {(user?.full_name || user?.username || "U").charAt(0).toUpperCase()}
+            </span>
+            Dashboard
+          </Link>
+        ) : (
+          <>
+            <Link href="/login" className="landing-link-button">
+              Log In
+            </Link>
+            <Link href="/register" className="landing-link-button">
+              Sign Up
+            </Link>
+            <Link href="/dashboard" replace className="landing-link-button">
+              Dashboard
+            </Link>
+          </>
+        )}
         <Link href="/runs/new" className="landing-button landing-button-primary">
           Start Testing Free
         </Link>

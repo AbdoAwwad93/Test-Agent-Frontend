@@ -1,6 +1,53 @@
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:7788";
 
+// ── Auth types ──────────────────────────────────────────────────────────
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  username: string;
+  full_name: string | null;
+  is_active: boolean;
+  email_verified: boolean;
+  created_at: string;
+};
+
+export type LoginInput = {
+  login: string;
+  password: string;
+};
+
+export type RegisterInput = {
+  email: string;
+  username: string;
+  password: string;
+  full_name?: string | null;
+};
+
+export type TokenPair = {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+};
+
+export type ChangePasswordInput = {
+  current_password: string;
+  new_password: string;
+};
+
+export type ApiToken = {
+  id: string;
+  name: string;
+  created_at: string;
+  last_used_at: string | null;
+  expires_at: string | null;
+};
+
+export type ApiTokenCreated = ApiToken & {
+  token: string;
+};
+
 export type RunStatus =
   | "pass"
   | "fail"
@@ -96,12 +143,12 @@ export async function fetchHealth(): Promise<HealthResponse> {
 }
 
 export async function fetchRuns(): Promise<RunRecord[]> {
-  const response = await fetch(`${API_URL}/api/runs`);
+  const response = await authFetch(`${API_URL}/api/runs`);
   return parseJson<RunRecord[]>(response);
 }
 
 export async function fetchRun(runId: string): Promise<RunRecord> {
-  const response = await fetch(`${API_URL}/api/runs/${runId}`);
+  const response = await authFetch(`${API_URL}/api/runs/${runId}`);
   return parseJson<RunRecord>(response);
 }
 
@@ -123,7 +170,7 @@ export async function createRun(
   if (payload.browser_hint) body.browser_hint = payload.browser_hint;
   if (payload.execution_mode) body.execution_mode = payload.execution_mode;
 
-  const response = await fetch(`${API_URL}/api/runs`, {
+  const response = await authFetch(`${API_URL}/api/runs`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -141,7 +188,7 @@ type PauseRunResponse = {
 };
 
 export async function pauseRun(runId: string, reason?: string): Promise<PauseRunResponse> {
-  const response = await fetch(`${API_URL}/api/runs/${runId}/pause`, {
+  const response = await authFetch(`${API_URL}/api/runs/${runId}/pause`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ reason }),
@@ -156,7 +203,7 @@ type ResumeRunResponse = {
 };
 
 export async function resumeRun(runId: string): Promise<ResumeRunResponse> {
-  const response = await fetch(`${API_URL}/api/runs/${runId}/resume`, {
+  const response = await authFetch(`${API_URL}/api/runs/${runId}/resume`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   });
@@ -168,7 +215,7 @@ export async function cancelRun(
   runId: string,
   reason: string,
 ): Promise<CancelRunResponse> {
-  const response = await fetch(`${API_URL}/api/runs/${runId}/cancel`, {
+  const response = await authFetch(`${API_URL}/api/runs/${runId}/cancel`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -280,4 +327,133 @@ export function sortRunsByNewest<T extends Pick<RunRecord, "created_at">>(
     (a, b) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
+}
+
+// ── Auth helpers ─────────────────────────────────────────────────────────
+
+export function getStoredAccessToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("access_token");
+}
+
+export function getStoredRefreshToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("refresh_token");
+}
+
+export function storeTokens(tokens: TokenPair): void {
+  localStorage.setItem("access_token", tokens.access_token);
+  localStorage.setItem("refresh_token", tokens.refresh_token);
+}
+
+export function clearTokens(): void {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("auth_user");
+}
+
+export function getStoredUser(): AuthUser | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem("auth_user");
+  return raw ? (JSON.parse(raw) as AuthUser) : null;
+}
+
+export function storeUser(user: AuthUser): void {
+  localStorage.setItem("auth_user", JSON.stringify(user));
+}
+
+/** Attaches Authorization header when a token is available. */
+export function authFetch(
+  url: string,
+  options: RequestInit = {},
+): Promise<Response> {
+  const token = getStoredAccessToken();
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string>),
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  if (!headers["Content-Type"] && !(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
+  return fetch(url, { ...options, headers });
+}
+
+// ── Auth API functions ───────────────────────────────────────────────────
+
+export async function registerUser(
+  input: RegisterInput,
+): Promise<TokenPair> {
+  const response = await fetch(`${API_URL}/api/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  return parseJson<TokenPair>(response);
+}
+
+export async function loginUser(input: LoginInput): Promise<TokenPair> {
+  const response = await fetch(`${API_URL}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  return parseJson<TokenPair>(response);
+}
+
+export async function refreshAccessToken(
+  refreshToken: string,
+): Promise<TokenPair> {
+  const response = await fetch(`${API_URL}/api/auth/refresh`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  });
+  return parseJson<TokenPair>(response);
+}
+
+export async function logoutUser(refreshToken: string): Promise<void> {
+  await authFetch(`${API_URL}/api/auth/logout`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  });
+}
+
+export async function fetchMe(): Promise<AuthUser> {
+  const response = await authFetch(`${API_URL}/api/auth/me`);
+  return parseJson<AuthUser>(response);
+}
+
+export async function changePassword(
+  input: ChangePasswordInput,
+): Promise<void> {
+  await authFetch(`${API_URL}/api/auth/change-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+}
+
+export async function fetchApiTokens(): Promise<ApiToken[]> {
+  const response = await authFetch(`${API_URL}/api/auth/api-tokens`);
+  return parseJson<ApiToken[]>(response);
+}
+
+export async function createApiToken(
+  name: string,
+): Promise<ApiTokenCreated> {
+  const response = await authFetch(`${API_URL}/api/auth/api-tokens`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  return parseJson<ApiTokenCreated>(response);
+}
+
+export async function revokeApiToken(tokenId: string): Promise<void> {
+  await authFetch(`${API_URL}/api/auth/api-tokens/${tokenId}`, {
+    method: "DELETE",
+  });
 }
