@@ -1,13 +1,25 @@
 "use client";
 
-import { type RunRecord, hasMultipleTargets, getRoleBadgeColor } from "@/lib/api";
+import { useMemo } from "react";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { type RunRecord, hasMultipleTargets, getRoleBadgeColor, fetchProjects } from "@/lib/api";
 
 interface RunCardProps {
   run: RunRecord;
   onClick: () => void;
+  hideProject?: boolean;
 }
 
-export function RunCard({ run, onClick }: RunCardProps) {
+export function RunCard({ run, onClick, hideProject = false }: RunCardProps) {
+  const { data: projects = [] } = useQuery({
+    queryKey: ["projects"],
+    queryFn: fetchProjects,
+  });
+  const projectMap = useMemo(
+    () => new Map(projects.map((p) => [p.id, p.name])),
+    [projects]
+  );
   return (
     <div className={`run-card ${run.overall_status}`} onClick={onClick}>
       <div className={`run-status-dot ${run.overall_status}`}></div>
@@ -15,6 +27,17 @@ export function RunCard({ run, onClick }: RunCardProps) {
         <div className="run-story">{run.story}</div>
         <div className="run-meta">
           <span className="run-id">{run.id.substring(0, 8)}</span>
+          {!hideProject && run.project_id && projectMap.has(run.project_id) && (
+            <div className="run-meta-item" onClick={(e) => e.stopPropagation()}>
+              <span className="material-icons-round" style={{ fontSize: '1rem' }}>folder</span>
+              <Link
+                href={`/projects/${run.project_id}`}
+                style={{ color: "var(--primary)" }}
+              >
+                <span style={{ textDecoration: "underline" }}>{projectMap.get(run.project_id)}</span>
+              </Link>
+            </div>
+          )}
           {hasMultipleTargets(run) ? (
             <div className="run-meta-item" style={{ gap: '0.25rem', flexWrap: 'wrap' }}>
               <span className="material-icons-round" style={{ fontSize: '1rem' }}>link</span>

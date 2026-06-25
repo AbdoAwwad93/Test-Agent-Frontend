@@ -10,6 +10,7 @@ import "../features/appShell/appShell.css"
 const PROTECTED_ROUTES = [
   "/dashboard",
   "/history",
+  "/projects",
   "/runs/new",
   "/runs/live",
   "/runs",
@@ -90,6 +91,7 @@ function Sidebar({
     { href: "/dashboard", icon: "dashboard", label: "Dashboard" },
     { href: "/runs/new", icon: "add_circle", label: "New Run" },
     { href: "/runs/live", icon: "terminal", label: "Live Execution" },
+    { href: "/projects", icon: "folder", label: "Projects" },
     { href: "/history", icon: "history", label: "History" },
   ];
 

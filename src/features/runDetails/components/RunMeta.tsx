@@ -1,4 +1,9 @@
-import { type RunRecord, hasMultipleTargets, getRoleBadgeColor } from '@/lib/api';
+"use client";
+
+import { useMemo } from "react";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { type RunRecord, hasMultipleTargets, getRoleBadgeColor, fetchProjects } from '@/lib/api';
 
 interface RunMetaProps {
   run: RunRecord;
@@ -9,6 +14,14 @@ interface RunMetaProps {
 }
 
 export function RunMeta({ run, runId, liveMode, showRecording = false, onToggleVideo }: RunMetaProps) {
+  const { data: projects = [] } = useQuery({
+    queryKey: ["projects"],
+    queryFn: fetchProjects,
+  });
+  const projectMap = useMemo(
+    () => new Map(projects.map((p) => [p.id, p.name])),
+    [projects]
+  );
   return (
     <div className="run-meta-row" style={{ marginBottom: '2rem' }}>
       {hasMultipleTargets(run) ? (
@@ -34,6 +47,16 @@ export function RunMeta({ run, runId, liveMode, showRecording = false, onToggleV
           <span className="material-icons-round">link</span>
           {run.url}
         </span>
+      )}
+      {run.project_id && projectMap.has(run.project_id) && (
+        <Link
+          href={`/projects/${run.project_id}`}
+          className="meta-tag"
+          style={{ cursor: "pointer" }}
+        >
+          <span className="material-icons-round" style={{ fontSize: '1rem' }}>folder</span>
+          <span style={{ textDecoration: "underline" }}>{projectMap.get(run.project_id)}</span>
+        </Link>
       )}
       {(showRecording || !liveMode) && (
         <>
