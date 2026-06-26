@@ -127,11 +127,16 @@
 }
 
 .project-detail-description {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
-  max-width: 760px;
+  line-height: 1.55;
+  max-width: 560px;
+  padding: 0.45rem 0.65rem;
+  background: var(--surface-container-low);
+  border-radius: 6px;
+  border-left: 2.5px solid var(--outline-variant);
+  margin-top: 0.15rem;
 }
-
 .project-detail-meta {
   display: flex;
   align-items: center;
