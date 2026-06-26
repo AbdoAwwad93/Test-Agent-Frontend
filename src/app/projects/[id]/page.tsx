@@ -9,7 +9,7 @@ import {
   type RunRecord,
 } from "@/lib/api";
 import { RunCard } from "@/features/history/components/RunCard";
-import "../projects.css";
+import "../../../features/projects/projects.css";
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
