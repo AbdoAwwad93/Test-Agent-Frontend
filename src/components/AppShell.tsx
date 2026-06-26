@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, type ReactNode } from "react";
 import "../features/appShell/appShell.css"
-
+import "../features/Auth/auth.css"
 const PROTECTED_ROUTES = [
   "/dashboard",
   "/history",
