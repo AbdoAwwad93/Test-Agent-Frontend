@@ -256,25 +256,22 @@
 /* ---------- Left column ---------- */
 
 .auth-left {
-  flex: 0 1 560px;
-  max-width: 560px;
+  flex: 1 1 560px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 2.5rem;
-  padding: 4rem 5rem 4rem 4rem;
+  padding: 4rem 5rem 4rem clamp(2rem, 12vw, 15rem);
 }
 
 .auth-brand {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin-left: 15rem;
   opacity: 0;
   animation: auth-fade-up 0.5s ease-out forwards;
   animation-delay: 0.05s;
 }
-
 .auth-brand-icon {
   font-size: 1.6rem;
   color: var(--primary);
@@ -301,7 +298,6 @@
   width: 100%;
   max-width: 420px;
   margin: 0;
-  margin-left: 15rem;
   opacity: 0;
   animation: auth-fade-up 0.5s ease-out forwards;
   animation-delay: 0.15s;
@@ -311,6 +307,19 @@
 .auth-page-split .auth-card > * {
   opacity: 0;
   animation: auth-fade-up 0.45s ease-out forwards;
+}
+
+.auth-page-split .auth-footer {
+  position: relative;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+.auth-page-split .auth-footer a {
+  position: relative;
+  z-index: 5;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .auth-page-split .auth-card > *:nth-child(1) { animation-delay: 0.20s; }
@@ -473,33 +482,74 @@
   }
 }
 
-/* ---------- Responsive: stack on small screens ---------- */
+/* ---------- Responsive: compact stacked layout ---------- */
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .auth-page-split {
     flex-direction: column;
   }
 
-  .auth-left {
-    max-width: 100%;
-    padding: 2.5rem 1.75rem 1.5rem;
-  }
-
-  .auth-brand {
-    margin-left: 0;
-  }
-
-  .auth-page-split .auth-card {
-    margin-left: 0;
-  }
-
+  /* Marketing panel becomes a compact, contained strip shown above the form */
   .auth-right {
+    order: -1;
+    flex: 0 0 auto;
+    align-items: flex-start;
     border-left: none;
-    border-top: 1px solid var(--border);
-    padding: 2.5rem 1.75rem;
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 1.5rem;
+    background: var(--surface-hover);
+  }
+
+  /* Hide the long pitch — keep only title + features */
+  .auth-right-icon,
+  .auth-right-text {
+    display: none !important;
+  }
+
+  .auth-right-content {
+    max-width: 100%;
+  }
+
+  .auth-right-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.9rem;
+    text-align: center;
   }
 
   .auth-feature-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
+  .auth-feature-card {
+    padding: 0.6rem 0.4rem;
+    text-align: center;
+    border-radius: var(--radius-sm);
+  }
+
+  .auth-feature-icon {
+    font-size: 1.1rem;
+    margin: 0 auto 0.35rem;
+  }
+
+  .auth-feature-card h3 {
+    font-size: 0.68rem;
+    line-height: 1.25;
+    margin-bottom: 0;
+  }
+
+  .auth-feature-card p {
+    display: none !important;
+  }
+
+  .auth-left {
+    max-width: 100%;
+    padding: 1.75rem 1.75rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-feature-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
