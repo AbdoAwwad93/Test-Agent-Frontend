@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchProject, fetchProjectRuns, type RunRecord } from "@/lib/api";
+import { fetchProject, type ProjectDetailRecord, type RunRecord } from "@/lib/api";
 
 export interface RunStats {
   total: number;
@@ -10,12 +10,11 @@ export interface RunStats {
 }
 
 export interface UseProjectDetailReturn {
-  project: Awaited<ReturnType<typeof fetchProject>> | undefined;
+  project: ProjectDetailRecord | undefined;
   runs: RunRecord[];
   runStats: RunStats;
   isProjectLoading: boolean;
   isProjectError: boolean;
-  isRunsLoading: boolean;
 }
 
 const RUNS_STATUS = {
@@ -26,25 +25,16 @@ const RUNS_STATUS = {
 } as const;
 
 export function useProjectDetail(id: string): UseProjectDetailReturn {
-  const {
-    data: project,
-    isLoading: isProjectLoading,
-    isError: isProjectError,
-  } = useQuery({
-    queryKey: ["project", id],
-    queryFn: () => fetchProject(id),
-    staleTime: 1000 * 60 * 5, // 5 minutes — project metadata rarely changes
-  });
+  const { data, isLoading: isProjectLoading, isError: isProjectError } =
+    useQuery<ProjectDetailRecord>({
+      queryKey: ["project-detail", id],
+      queryFn: () => fetchProject(id) as Promise<ProjectDetailRecord>,
+      staleTime: 1000 * 30,
+    });
 
-  const { data: runs = [], isLoading: isRunsLoading } = useQuery<RunRecord[]>({
-    queryKey: ["project-runs", id],
-    queryFn: () => fetchProjectRuns(id),
-    staleTime: 1000 * 30, // 30 seconds — runs update more frequently
-    enabled: !isProjectLoading && !isProjectError, // skip until project is confirmed
-  });
+  const runs = data?.runs ?? [];
 
   const runStats = useMemo<RunStats>(() => {
-    // Single-pass aggregation instead of four separate .filter() calls
     return runs.reduce<RunStats>(
       (acc, run) => {
         acc.total += 1;
@@ -63,11 +53,10 @@ export function useProjectDetail(id: string): UseProjectDetailReturn {
   }, [runs]);
 
   return {
-    project,
+    project: data,
     runs,
     runStats,
     isProjectLoading,
     isProjectError,
-    isRunsLoading,
   };
 }

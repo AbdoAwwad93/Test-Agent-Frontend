@@ -19,11 +19,9 @@ import {
   registerUser,
   logoutUser,
   fetchMe,
-  refreshAccessToken,
-  storeTokens,
+  storeAccessToken,
   clearTokens,
   storeUser,
-  getStoredRefreshToken,
   getStoredAccessToken,
 } from "@/lib/api";
 
@@ -55,36 +53,13 @@ const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
 });
 
-// ── fetchMe with auto-refresh ─────────────────────────────────────────────────
+// ── fetchMe with token check ────────────────────────────────────────────────
 
-/**
- * Wraps fetchMe with a transparent token-refresh fallback.
- * Called by the useQuery below on mount (and any time the query is invalidated).
- */
 async function fetchMeWithRefresh(): Promise<AuthUser> {
-  // No token at all → treat as unauthenticated (causes query to return null)
   if (!getStoredAccessToken()) {
-    const refresh = getStoredRefreshToken();
-    if (!refresh) throw new Error("unauthenticated");
-
-    const tokens = await refreshAccessToken(refresh);
-    storeTokens(tokens);
+    throw new Error("unauthenticated");
   }
-
-  try {
-    return await fetchMe();
-  } catch {
-    // Access token expired — try refresh once
-    const refresh = getStoredRefreshToken();
-    if (!refresh) {
-      clearTokens();
-      throw new Error("unauthenticated");
-    }
-
-    const tokens = await refreshAccessToken(refresh);
-    storeTokens(tokens);
-    return fetchMe();
-  }
+  return fetchMe();
 }
 
 // ── Provider ──────────────────────────────────────────────────────────────────
@@ -120,8 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (input: LoginInput) => {
-      const tokens = await loginUser(input);
-      storeTokens(tokens);
+      const res = await loginUser(input);
+      storeAccessToken(res.access_token);
       const u = await fetchMe();
       storeUser(u);
       return u;
@@ -133,8 +108,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation({
     mutationFn: async (input: RegisterInput) => {
-      const tokens = await registerUser(input);
-      storeTokens(tokens);
+      const res = await registerUser(input);
+      storeAccessToken(res.access_token);
       const u = await fetchMe();
       storeUser(u);
       return u;
@@ -146,20 +121,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const refresh = getStoredRefreshToken();
-      if (refresh) {
-        try {
-          await logoutUser(refresh);
-        } catch {
-          // Ignore server errors — still clear local state
-        }
+      try {
+        await logoutUser();
+      } catch {
+        // Ignore server errors — still clear local state
       }
       clearTokens();
     },
     onSettled: () => {
-      // Clear cached user regardless of success/failure
       queryClient.setQueryData(authKeys.me, null);
-      // Optionally invalidate all queries that depend on auth
       queryClient.clear();
     },
   });

@@ -21,7 +21,6 @@ export default function ProjectDetailPage() {
     runStats,
     isProjectLoading,
     isProjectError,
-    isRunsLoading,
   } = useProjectDetail(id);
 
   const goBack = useCallback(() => router.push("/projects"), [router]);
@@ -47,7 +46,7 @@ export default function ProjectDetailPage() {
       <ProjectStatsGrid stats={runStats} />
       <ProjectRunsList
         runs={runs}
-        isLoading={isRunsLoading}
+        isLoading={isProjectLoading}
         onRunClick={goToRun}
       />
     </div>

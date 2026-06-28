@@ -25,9 +25,8 @@ export type RegisterInput = {
   full_name?: string | null;
 };
 
-export type TokenPair = {
+export type TokenResponse = {
   access_token: string;
-  refresh_token: string;
   token_type: string;
 };
 
@@ -87,6 +86,10 @@ export type ProjectRecord = {
   created_at: number;
   created_at_iso: string;
   run_count: number;
+};
+
+export type ProjectDetailRecord = ProjectRecord & {
+  runs: RunRecord[];
 };
 
 export type RunRecord = {
@@ -354,19 +357,13 @@ export function getStoredAccessToken(): string | null {
   return localStorage.getItem("access_token");
 }
 
-export function getStoredRefreshToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("refresh_token");
-}
-
-export function storeTokens(tokens: TokenPair): void {
-  localStorage.setItem("access_token", tokens.access_token);
-  localStorage.setItem("refresh_token", tokens.refresh_token);
+export function storeAccessToken(token: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("access_token", token);
 }
 
 export function clearTokens(): void {
   localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
   localStorage.removeItem("auth_user");
 }
 
@@ -402,40 +399,28 @@ export function authFetch(
 
 export async function registerUser(
   input: RegisterInput,
-): Promise<TokenPair> {
+): Promise<TokenResponse> {
   const response = await fetch(`${API_URL}/api/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
-  return parseJson<TokenPair>(response);
+  return parseJson<TokenResponse>(response);
 }
 
-export async function loginUser(input: LoginInput): Promise<TokenPair> {
+export async function loginUser(input: LoginInput): Promise<TokenResponse> {
   const response = await fetch(`${API_URL}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
-  return parseJson<TokenPair>(response);
+  return parseJson<TokenResponse>(response);
 }
 
-export async function refreshAccessToken(
-  refreshToken: string,
-): Promise<TokenPair> {
-  const response = await fetch(`${API_URL}/api/auth/refresh`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh_token: refreshToken }),
-  });
-  return parseJson<TokenPair>(response);
-}
-
-export async function logoutUser(refreshToken: string): Promise<void> {
+export async function logoutUser(): Promise<void> {
   await authFetch(`${API_URL}/api/auth/logout`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh_token: refreshToken }),
   });
 }
 
