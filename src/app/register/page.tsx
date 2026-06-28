@@ -35,11 +35,7 @@ export default function RegisterPage() {
         <div className="register-left-glow" aria-hidden="true" />
 
         <div className="register-left-content">
-          <div className="auth-brand">
-            <span className="material-icons-round auth-brand-icon">travel_explore</span>
-            <span className="auth-brand-name">Nomad Agent</span>
-          </div>
-
+      
           <h2 className="register-pitch-title">
             Set up once.
             <br />
