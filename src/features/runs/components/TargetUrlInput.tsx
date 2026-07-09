@@ -1,15 +1,19 @@
 "use client";
 
+import { type UrlSuggestion } from "@/features/runs/hooks/UseNewRun";
+
 interface TargetUrlInputProps {
   url: string;
   updateUrl: (value: string) => void;
   urlError: string;
+  suggestions?: UrlSuggestion[];
 }
 
 export function TargetUrlInput({
   url,
   updateUrl,
   urlError,
+  suggestions = [],
 }: TargetUrlInputProps) {
   return (
     <div className="form-group">
@@ -32,6 +36,31 @@ export function TargetUrlInput({
         aria-invalid={Boolean(urlError)}
         aria-describedby={urlError ? "input-url-error" : undefined}
       />
+
+      {suggestions.length > 0 && (
+        <div className="url-suggestions">
+          <span className="url-suggestions-label">
+            {suggestions[0].related ? "Recent for this project" : "Recently used"}
+          </span>
+          {suggestions.map((s) => (
+            <button
+              type="button"
+              key={s.url}
+              className={`url-chip${s.related ? " related" : ""}${
+                url === s.url ? " active" : ""
+              }`}
+              onClick={() => updateUrl(s.url)}
+              title={s.url}
+            >
+              {s.related && (
+                <span className="material-icons-round">bookmark</span>
+              )}
+              <span className="url-chip-text">{s.url}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {urlError && (
         <span className="field-error" id="input-url-error">
           <span className="material-icons-round">error_outline</span>

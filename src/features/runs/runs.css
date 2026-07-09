@@ -259,3 +259,64 @@
     width: 100%;
   }
 }
+
+
+/* ===== Recent URL Suggestions ===== */
+.url-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.url-suggestions-label {
+  width: 100%;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.url-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  background: var(--surface-container-highest);
+  border: 1px solid transparent;
+  border-radius: 99px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  max-width: 240px;
+  transition: all 0.15s ease;
+  font-family: var(--font-ui);
+}
+
+.url-chip:hover {
+  background: var(--surface-container-lowest);
+  border-color: var(--outline-variant);
+  color: var(--text-primary);
+}
+
+.url-chip.active {
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.url-chip.related .material-icons-round {
+  color: var(--primary);
+}
+
+.url-chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.url-chip .material-icons-round {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}

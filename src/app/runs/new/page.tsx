@@ -29,6 +29,7 @@ export default function NewRun() {
     setHeadless,
     urlError,
     storyError,
+     urlSuggestions,
     handleSubmit,
     isPending,
     submitError,
@@ -77,6 +78,7 @@ export default function NewRun() {
                   url={url}
                   updateUrl={updateUrl}
                   urlError={urlError}
+                  suggestions={urlSuggestions}
                 />
               )}
             </div>

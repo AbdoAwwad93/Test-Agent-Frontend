@@ -1,10 +1,19 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useCreateRun } from "@/features/runs/hooks/UseCreateRun";
-import { fetchProjects, type ProjectRecord } from "@/lib/api";
+import {
+  fetchProjects,
+  fetchRuns,
+  sortRunsByNewest,
+  type ProjectRecord,
+  type RunRecord,
+} from "@/lib/api";
 
 export type TargetEntry = { url: string; role: string };
+export type UrlSuggestion = { url: string; related: boolean };
+
+const MAX_SUGGESTIONS = 5;
 
 export function useNewRun() {
   const router = useRouter();
@@ -28,6 +37,40 @@ export function useNewRun() {
     queryKey: ["projects"],
     queryFn: fetchProjects,
   });
+
+  const { data: runs = [] } = useQuery<RunRecord[]>({
+    queryKey: ["runs"],
+    queryFn: fetchRuns,
+  });
+
+  // ── Recent URL suggestions ──────────────────────────────────────────
+  const urlSuggestions: UrlSuggestion[] = useMemo(() => {
+    const sorted = sortRunsByNewest(runs);
+
+    const dedupe = (list: RunRecord[]): string[] => {
+      const seen = new Set<string>();
+      const result: string[] = [];
+      for (const r of list) {
+        if (!r.url || seen.has(r.url)) continue;
+        seen.add(r.url);
+        result.push(r.url);
+        if (result.length >= MAX_SUGGESTIONS) break;
+      }
+      return result;
+    };
+
+    if (projectId) {
+      const relatedRuns = sorted.filter((r) => r.project_id === projectId);
+      const relatedUrls = dedupe(relatedRuns);
+
+      if (relatedUrls.length > 0) {
+        return relatedUrls.map((u) => ({ url: u, related: true }));
+      }
+      // fallback: no runs for this project yet → show general recent urls
+    }
+
+    return dedupe(sorted).map((u) => ({ url: u, related: false }));
+  }, [runs, projectId]);
 
   const toggleMultiRole = (checked: boolean) => {
     setMultiRole(checked);
@@ -71,6 +114,7 @@ export function useNewRun() {
     } else {
       nextUrlError = !url ? "Please provide a target URL." : "";
     }
+
     const nextStoryError = !story ? "Please describe a user story." : "";
 
     setUrlError(nextUrlError);
@@ -114,27 +158,21 @@ export function useNewRun() {
     projects,
     projectId,
     setProjectId,
-
     multiRole,
     toggleMultiRole,
-
     url,
     updateUrl,
-
+    urlSuggestions,
     targets,
     addTarget,
     removeTarget,
     updateTarget,
-
     story,
     updateStory,
-
     headless,
     setHeadless,
-
     urlError,
     storyError,
-
     handleSubmit,
     isPending,
     submitError,
