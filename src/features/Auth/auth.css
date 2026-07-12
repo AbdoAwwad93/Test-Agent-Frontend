@@ -308,9 +308,14 @@
   justify-content: center;
   gap: 2.5rem;
   padding: 4rem 5rem 4rem clamp(2rem, 12vw, 15rem);
+  position: relative;
 }
 
+
 .auth-brand {
+  position: absolute; 
+  top: 2.5rem;
+  left: clamp(2rem, 12vw, 15rem);
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -599,3 +604,38 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.auth-brand-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  color: unset; 
+}
+
+/* Light mode: show dark logo */
+.auth-brand-logo--light { display: none; }
+.auth-brand-logo--dark  { display: block; }
+
+/* Dark mode via data-theme attribute */
+[data-theme="dark"] .auth-brand-logo--light { display: block; }
+[data-theme="dark"] .auth-brand-logo--dark  { display: none; }
+
+/* Dark mode via prefers-color-scheme (fallback) */
+@media (prefers-color-scheme: dark) {
+  .auth-brand-logo--light { display: block; }
+  .auth-brand-logo--dark  { display: none; }
+}
+
+
+.auth-right-logo {
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: auth-fade-up 0.5s ease-out forwards;
+  animation-delay: 0.20s;
+}
+
+.auth-right-logo--dark  { display: block; }
+.auth-right-logo--light { display: none; }
+
+[data-theme="dark"] .auth-right-logo--dark  { display: none; }
+[data-theme="dark"] .auth-right-logo--light { display: block; }

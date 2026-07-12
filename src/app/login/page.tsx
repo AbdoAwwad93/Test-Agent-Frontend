@@ -2,6 +2,7 @@
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useLogin } from "@/features/Auth/hooks/UseLogin";
 import "../../features/Auth/auth.css";
 
@@ -28,8 +29,26 @@ export default function LoginPage() {
     <div className="auth-page auth-page-split">
       {/* Left side: brand + form */}
       <div className="auth-left">
+        {/* Brand fixed at top-left */}
         <div className="auth-brand">
-          <span className="material-icons-round auth-brand-icon">travel_explore</span>
+          <Image
+            src="/assets/logo_white.png"
+            alt="Nomad Agent"
+            width={120}
+            height={36}
+            className="auth-brand-logo auth-brand-logo--dark"
+            style={{ color: "unset" }}
+            priority
+          />
+          <Image
+            src="/assets/logo_dark.png"
+            alt="Nomad Agent"
+            width={120}
+            height={36}
+            className="auth-brand-logo auth-brand-logo--light"
+            style={{ color: "unset" }}
+            priority
+          />
           <span className="auth-brand-name">Nomad Agent</span>
         </div>
 
@@ -110,7 +129,6 @@ export default function LoginPage() {
       {/* Right side: marketing copy */}
       <div className="auth-right">
         <div className="auth-right-content">
-          <span className="material-icons-round auth-right-icon">smart_toy</span>
           <h2 className="auth-right-title">
             Your tireless Test Agent,
             <br />
