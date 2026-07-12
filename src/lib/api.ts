@@ -119,6 +119,13 @@ type HealthResponse = {
   status: string;
 };
 
+export type DashboardStats = {
+  total: number;
+  successRate: string;
+  avgDur: string;
+  runsLast24h: number;
+};
+
 export type CreateRunInput = {
   url?: string;
   targets?: { url: string; role?: string | null }[];
@@ -165,6 +172,11 @@ export async function fetchRuns(): Promise<RunRecord[]> {
 export async function fetchRunsByProject(projectId: string): Promise<RunRecord[]> {
   const response = await authFetch(`${API_URL}/api/runs?project_id=${encodeURIComponent(projectId)}`);
   return parseJson<RunRecord[]>(response);
+}
+
+export async function fetchDashboardStats(): Promise<DashboardStats> {
+  const response = await authFetch(`${API_URL}/api/dashboard/stats`);
+  return parseJson<DashboardStats>(response);
 }
 
 export async function fetchRun(runId: string): Promise<RunRecord> {

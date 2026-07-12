@@ -5,23 +5,26 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { computeRunStats } from "@/features/dashboard/utils/ComputeRunStats";
 import { useRuns } from "@/features/dashboard/hooks/UseRun";
-import { fetchProjects, hasMultipleTargets, getRoleBadgeColor } from "@/lib/api";
+import { fetchProjects, fetchDashboardStats, hasMultipleTargets, getRoleBadgeColor, type DashboardStats } from "@/lib/api";
 import "../../features/dashboard/dashboard.css"
 export default function Dashboard() {
   const router = useRouter();
-  const { data: runs = [], isLoading, isError } = useRuns();
+  const { data: runs = [], isLoading: runsLoading, isError: runsError } = useRuns();
   const { data: projects = [] } = useQuery({
     queryKey: ["projects"],
     queryFn: fetchProjects,
+  });
+  const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
+    queryKey: ["dashboardStats"],
+    queryFn: fetchDashboardStats,
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
   });
   const projectMap = useMemo(
     () => new Map(projects.map((p) => [p.id, p.name])),
     [projects]
   );
-
-  const stats = useMemo(() => computeRunStats(runs), [runs]);
 
   return (
     <div className="page active">
@@ -44,22 +47,22 @@ export default function Dashboard() {
       <div className="stats-grid">
         <div className="stat-card">
           <span className="stat-label">Total Executions</span>
-          <span className="stat-value">{isLoading ? "--" : stats.total}</span>
+          <span className="stat-value">{statsLoading ? "--" : stats!.total}</span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Success Rate</span>
           <span className="stat-value accent">
-            {isLoading ? "--" : stats.successRate}
+            {statsLoading ? "--" : stats!.successRate}
           </span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Avg Duration</span>
-          <span className="stat-value">{isLoading ? "--" : stats.avgDur}</span>
+          <span className="stat-value">{statsLoading ? "--" : stats!.avgDur}</span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Last 24 h</span>
           <span className="stat-value">
-            {isLoading ? "--" : stats.runsLast24h}
+            {statsLoading ? "--" : stats!.runsLast24h}
           </span>
         </div>
       </div>
@@ -69,13 +72,13 @@ export default function Dashboard() {
       </div>
 
       <div className="runs-list">
-        {isLoading ? (
+        {runsLoading ? (
           <div className="skeleton-list">
             <div className="skeleton"></div>
             <div className="skeleton"></div>
             <div className="skeleton"></div>
           </div>
-        ) : isError ? (
+        ) : runsError ? (
           <div className="empty-state">
             <p>Could not load runs. Please try again.</p>
           </div>
