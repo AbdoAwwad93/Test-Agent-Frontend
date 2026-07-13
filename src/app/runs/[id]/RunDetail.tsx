@@ -9,6 +9,7 @@ import { RunHeader } from '@/features/runDetails/components/RunHeader';
 import { LiveExecutionLog } from '@/features/runDetails/components/LiveExecutionLog';
 import { StoryBlock } from '@/features/runDetails/components/StoryBlock';
 import {useRunDetailPage} from "@/features/runDetails/hooks/UseRunDetailPage"
+import { InputRequestModal } from '@/features/runDetails/components/InputRequestModal';
 import { VideoModal } from '@/features/runDetails/components/VideoModel';
 export default function RunDetail({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -37,6 +38,8 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
     handleCancel,
     handlePause,
     handleResume,
+    inputRequest,
+    clearInputRequest,
   } = useRunDetailPage(id);
 
   if (isLoading) {
@@ -141,6 +144,14 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
 
       {isVideoOpen && run && (
         <VideoModal runId={id} posterUrl={posterUrl} onClose={closeVideo} />
+      )}
+
+      {inputRequest && (
+        <InputRequestModal
+          runId={id}
+          inputRequest={inputRequest}
+          onClose={clearInputRequest}
+        />
       )}
     </div>
   );

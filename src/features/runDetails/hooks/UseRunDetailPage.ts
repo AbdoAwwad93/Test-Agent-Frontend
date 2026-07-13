@@ -67,7 +67,10 @@ export function useRunDetailPage(id: string) {
   const streamEnabled = run ? shouldStreamRun(run) : false;
   const showControls = run ? showRunControls(run) : false;
 
-  const { steps: liveSteps, liveStatus, streamError, isStreaming } = useRunStream(id, streamEnabled);
+  const { steps: liveSteps, liveStatus, streamError, isStreaming, inputRequest: streamInputRequest, clearInputRequest } = useRunStream(id, streamEnabled);
+
+  // Use live stream input_request first; fall back to cached run data for page-refresh recovery
+  const inputRequest = streamInputRequest ?? (liveStatus === 'waiting_for_input' && run?.input_request ? run.input_request : null);
 
   const cancelMutation = useCancelRun(id);
   const pauseMutation = usePauseRun(id);
@@ -120,5 +123,7 @@ export function useRunDetailPage(id: string) {
     handleCancel,
     handlePause,
     handleResume,
+    inputRequest,
+    clearInputRequest,
   };
 }

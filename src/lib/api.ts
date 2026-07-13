@@ -47,6 +47,14 @@ export type ApiTokenCreated = ApiToken & {
   token: string;
 };
 
+export type InputRequest = {
+  prompt: string;
+  input_type: string;
+  target?: string;
+  context_action?: string;
+  description?: string;
+};
+
 export type RunStatus =
   | "pass"
   | "fail"
@@ -56,7 +64,8 @@ export type RunStatus =
   | "pause_requested"
   | "paused"
   | "resuming"
-  | "resumed";
+  | "resumed"
+  | "waiting_for_input";
 
 export type Target = {
   url: string;
@@ -113,6 +122,9 @@ export type RunRecord = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pause_checkpoint?: any | null;
   execution_mode?: "server" | "client_browser" | string;
+  // Input request fields
+  waiting_for_input?: boolean;
+  input_request?: InputRequest;
 };
 
 type HealthResponse = {
@@ -257,6 +269,25 @@ export async function cancelRun(
   });
 
   return parseJson<CancelRunResponse>(response);
+}
+
+export async function submitRunInput(
+  runId: string,
+  value: string,
+): Promise<void> {
+  const response = await authFetch(`${API_URL}/api/runs/${runId}/input`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ value }),
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    const message =
+      data && typeof data === "object" && "detail" in data
+        ? String(data.detail)
+        : `Failed to submit input (${response.status})`;
+    throw new Error(message);
+  }
 }
 
 export function getScreenshotUrl(runId: string, screenshot?: string | null) {
