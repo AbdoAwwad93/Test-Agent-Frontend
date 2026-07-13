@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { API_URL, type RunRecord, type RunStep } from '@/lib/api';
+import { API_URL, type InputRequest, type RunRecord, type RunStep } from '@/lib/api';
 import { mergeStep } from '@/utils/stepMerge';
 
 type LiveStatus =
@@ -11,6 +11,7 @@ type LiveStatus =
   | 'pause_requested'
   | 'paused'
   | 'resumed'
+  | 'waiting_for_input'
   | 'disconnected'
   | 'error';
 
@@ -19,6 +20,8 @@ interface UseRunStreamResult {
   liveStatus: LiveStatus;
   streamError: string;
   isStreaming: boolean;
+  inputRequest: InputRequest | null;
+  clearInputRequest: () => void;
 }
 export function useRunStream(id: string, enabled: boolean): UseRunStreamResult {
   const queryClient = useQueryClient();
@@ -26,6 +29,7 @@ export function useRunStream(id: string, enabled: boolean): UseRunStreamResult {
   const [liveStatus, setLiveStatus] = useState<LiveStatus>('connecting');
   const [streamError, setStreamError] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [inputRequest, setInputRequest] = useState<InputRequest | null>(null);
 
   useEffect(() => {
     if (!enabled) {
@@ -38,6 +42,7 @@ export function useRunStream(id: string, enabled: boolean): UseRunStreamResult {
     setIsStreaming(true);
     setLiveStatus('connecting');
     setSteps(cachedSteps);
+    setInputRequest(null);
 
     const stream = new EventSource(`${API_URL}/api/runs/${id}/stream`);
 
@@ -101,6 +106,20 @@ export function useRunStream(id: string, enabled: boolean): UseRunStreamResult {
             setLiveStatus('running');
             break;
           }
+          case 'input_request': {
+            setInputRequest({
+              prompt: data.prompt ?? 'Please provide a value',
+              input_type: data.input_type ?? 'text',
+              target: data.target,
+              context_action: data.context_action,
+              description: data.description,
+            });
+            setLiveStatus('waiting_for_input');
+            queryClient.setQueryData<RunRecord>(['run', id], (old) =>
+              old ? { ...old, waiting_for_input: true, input_request: data } : old,
+            );
+            break;
+          }
           case 'finished': {
             queryClient.setQueryData<RunRecord>(['run', id], (old) => ({
               ...(old ?? {}),
@@ -142,5 +161,12 @@ export function useRunStream(id: string, enabled: boolean): UseRunStreamResult {
     };
   }, [id, enabled, queryClient]);
 
-  return { steps, liveStatus, streamError, isStreaming };
+  const clearInputRequest = () => {
+    setInputRequest(null);
+    queryClient.setQueryData<RunRecord>(['run', id], (old) =>
+      old ? { ...old, waiting_for_input: false, input_request: undefined } : old,
+    );
+  };
+
+  return { steps, liveStatus, streamError, isStreaming, inputRequest, clearInputRequest };
 }
