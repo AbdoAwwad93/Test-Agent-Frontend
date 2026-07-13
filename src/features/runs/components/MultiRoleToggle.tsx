@@ -1,5 +1,6 @@
 "use client";
 
+import "../runs.css";
 interface MultiRoleToggleProps {
   multiRole: boolean;
   toggleMultiRole: (checked: boolean) => void;
@@ -12,11 +13,14 @@ export function MultiRoleToggle({
   return (
     <div className="form-group">
       <div className="toggle-row">
-        <div>
-          <span className="toggle-label">Multi-Role Mode</span>
-          <span className="toggle-sub">
-            Test a story across multiple roles and URLs
-          </span>
+        <div className="toggle-row-content">
+          <span className="material-icons-round">groups</span>
+          <div>
+            <span className="toggle-label">Multi-Role Mode</span>
+            <span className="toggle-sub">
+              Test a story across multiple roles and URLs
+            </span>
+          </div>
         </div>
         <label className="toggle-switch">
           <input

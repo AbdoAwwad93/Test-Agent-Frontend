@@ -1,5 +1,5 @@
 "use client";
-
+import "../runs.css";
 interface ExecutionParamsProps {
   headless: boolean;
   setHeadless: (checked: boolean) => void;
@@ -16,11 +16,14 @@ export function ExecutionParams({
         Execution Parameters
       </label>
       <div className="toggle-row">
-        <div>
-          <span className="toggle-label">Headless Browser</span>
-          <span className="toggle-sub">
-            Run without visible browser window
-          </span>
+        <div className="toggle-row-content">
+          <span className="material-icons-round">visibility_off</span>
+          <div>
+            <span className="toggle-label">Headless Browser</span>
+            <span className="toggle-sub">
+              Run without visible browser window
+            </span>
+          </div>
         </div>
         <label className="toggle-switch">
           <input
